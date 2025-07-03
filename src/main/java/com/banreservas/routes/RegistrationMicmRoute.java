@@ -14,8 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketTimeoutException;
-import java.time.OffsetDateTime;
-import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
 public class RegistrationMicmRoute extends RouteBuilder {
@@ -34,7 +32,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
     @Override
     public void configure() throws Exception {
 
-        // Manejo de errores de validación
         onException(IllegalArgumentException.class)
                 .handled(true)
                 .log(LoggingLevel.WARN, logger, "Error de validación en registro: ${exception.message}")
@@ -47,7 +44,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .marshal().json(JsonLibrary.Jackson)
                 .end();
 
-        // Manejo de timeout
         onException(SocketTimeoutException.class)
                 .handled(true)
                 .log(LoggingLevel.ERROR, logger, "Timeout conectando al servicio registro MICM")
@@ -58,7 +54,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .marshal().json(JsonLibrary.Jackson)
                 .end();
 
-        // Manejo de excepciones generales
         onException(Exception.class)
                 .handled(true)
                 .log(LoggingLevel.ERROR, logger, "Error inesperado en registro: ${exception.message}")
@@ -72,11 +67,9 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .routeId("registration-micm-service")
                 .log(LoggingLevel.INFO, logger, "Iniciando registro inscripción MICM")
 
-                // Preparar request
                 .process(generateRegistrationRequestProcessor)
                 .marshal().json(JsonLibrary.Jackson)
                 
-                // Configurar headers requeridos por el servicio MICM
                 .setHeader("id_consumidor", constant("123"))
                 .setHeader("fecha_hora", simple("${date:now:yyyy-MM-dd}"))
                 .setHeader("usuario", exchangeProperty("usuarioRq"))
@@ -84,34 +77,14 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .setHeader("operacion", constant("MasterRegistroInscripcion"))
                 .setHeader("sessionid", exchangeProperty("sessionIdRq"))
                 
-                // Configurar headers HTTP estándar
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
                 .setHeader("Authorization", exchangeProperty("authorizationRq"))
 
-                .process(exchange -> {
-                    String body = exchange.getIn().getBody(String.class);
-                    logger.info("Request body que se enviará al servicio MICM: {}", body);
-                    
-                    // Log de headers importantes
-                    logger.info("Headers del request:");
-                    logger.info("  Authorization: {}", exchange.getIn().getHeader("Authorization"));
-                    logger.info("  sessionid: {}", exchange.getIn().getHeader("sessionid"));
-                    logger.info("  usuario: {}", exchange.getIn().getHeader("usuario"));
-                    logger.info("  operacion: {}", exchange.getIn().getHeader("operacion"));
-                    logger.info("  id_consumidor: {}", exchange.getIn().getHeader("id_consumidor"));
-                })
-                
-                // TEMPORAL: Comparar con JSON que funciona
-                .process(new com.banreservas.processors.DebugJsonProcessor())
-
-                // Llamar al servicio con configuración robusta de timeout
                 .toD(registrationUrl + "?bridgeEndpoint=true&throwExceptionOnFailure=false&connectionTimeout=30000&socketTimeout=30000")
 
-                // Evaluar respuesta según el código HTTP
                 .choice()
                 
-                // 200 - Operación exitosa
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(200))
                     .log(LoggingLevel.INFO, logger, "Respuesta exitosa del servicio registro - HTTP 200")
                     .process(exchange -> {
@@ -124,32 +97,48 @@ public class RegistrationMicmRoute extends RouteBuilder {
                         exchange.getIn().setBody(responseBody);
                     })
                 
-                // 400 - Request inválido
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(400))
                     .log(LoggingLevel.WARN, logger, "Request inválido para servicio registro - HTTP 400")
                     .process(exchange -> {
                         String responseBody = exchange.getIn().getBody(String.class);
-                        logger.error("===== RESPUESTA COMPLETA HTTP 400 =====");
-                        logger.error("Status Code: {}", exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE));
-                        logger.error("Response Body: {}", responseBody);
-                        logger.error("Headers de respuesta: {}", exchange.getIn().getHeaders());
-                        logger.error("==========================================");
+                        String errorMessage = "Validacion de request ha fallado";
                         
-                        String errorMessage = "Request inválido para registro de inscripción";
+                        // Log temporal para debugging
+                        logger.error("=== RESPUESTA COMPLETA DEL SERVICIO LINEAL ===");
+                        logger.error("Response Body: {}", responseBody);
+                        logger.error("===============================================");
                         
                         try {
-                            if (responseBody != null && responseBody.contains("responseMessage")) {
+                            if (responseBody != null && !responseBody.trim().isEmpty()) {
                                 com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
                                 com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(responseBody);
+                                
+                                // Intentar múltiples posibles ubicaciones del mensaje
                                 String headerMessage = jsonNode.path("header").path("responseMessage").asText();
+                                String bodyMessage = jsonNode.path("body").path("message").asText();
+                                String directMessage = jsonNode.path("message").asText();
+                                String responseMessage = jsonNode.path("responseMessage").asText();
+                                
+                                logger.error("Header message: {}", headerMessage);
+                                logger.error("Body message: {}", bodyMessage);
+                                logger.error("Direct message: {}", directMessage);
+                                logger.error("Response message: {}", responseMessage);
+                                
                                 if (!headerMessage.isEmpty()) {
                                     errorMessage = headerMessage;
+                                } else if (!bodyMessage.isEmpty()) {
+                                    errorMessage = bodyMessage;
+                                } else if (!directMessage.isEmpty()) {
+                                    errorMessage = directMessage;
+                                } else if (!responseMessage.isEmpty()) {
+                                    errorMessage = responseMessage;
                                 }
                             }
                         } catch (Exception e) {
-                            logger.warn("Error parseando mensaje de error del servicio: {}", e.getMessage());
+                            logger.error("Error parseando mensaje de error del servicio: {}", e.getMessage(), e);
                         }
                         
+                        logger.error("Mensaje final extraído: {}", errorMessage);
                         exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
                         exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
                     })
@@ -157,7 +146,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
                 
-                // 401 - No autorizado
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(401))
                     .log(LoggingLevel.WARN, logger, "Token inválido para servicio registro - HTTP 401")
                     .setProperty(Constants.MESSAGE_PROPERTIE, constant("Token inválido o expirado"))
@@ -166,7 +154,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
                 
-                // 403 - Forbidden
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(403))
                     .log(LoggingLevel.WARN, logger, "Acceso denegado para servicio registro - HTTP 403")
                     .setProperty(Constants.MESSAGE_PROPERTIE, constant("No tiene permisos para realizar esta operación de registro"))
@@ -175,7 +162,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
                 
-                // 500 - Error interno
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(500))
                     .log(LoggingLevel.ERROR, logger, "Error interno en servicio registro - HTTP 500")
                     .setProperty(Constants.MESSAGE_PROPERTIE, constant("Error interno en servicio de registro inscripción"))
@@ -184,7 +170,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
                 
-                // Otros códigos de error
                 .otherwise()
                     .log(LoggingLevel.ERROR, logger, "Error inesperado en servicio registro - HTTP ${header.CamelHttpResponseCode}")
                     .process(exchange -> {

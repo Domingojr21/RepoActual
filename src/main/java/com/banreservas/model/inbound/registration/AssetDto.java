@@ -1,6 +1,7 @@
 package com.banreservas.model.inbound.registration;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -16,6 +17,7 @@ import java.util.Date;
  * @since 2025-07-01
  */
 @RegisterForReflection
+@JsonInclude(JsonInclude.Include.NON_NULL) 
 public record AssetDto(
         @JsonProperty("propertyTypeId")
         Integer propertyTypeId,

@@ -19,12 +19,12 @@ public record ResponseRegistrationOrqDto(
         String succeeded,
 
         @JsonProperty("message")
-        String message,
+        Object message,
 
         @JsonProperty("errors")
         Object errors,
 
         @JsonProperty("data")
-        RegistrationDataOrqDto data
+        CompleteRegistrationDataOrqDto data
 ) implements Serializable {
 }

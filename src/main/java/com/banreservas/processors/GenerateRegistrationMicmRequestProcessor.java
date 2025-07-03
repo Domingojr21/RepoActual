@@ -37,6 +37,22 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
             throw new IllegalArgumentException("Request body es requerido");
         }
 
+        if (requestOrqDto.operations() == null) {
+            throw new IllegalArgumentException("La sección 'operaciones' es requerida");
+        }
+        
+        if (requestOrqDto.assets() == null || requestOrqDto.assets().isEmpty()) {
+            throw new IllegalArgumentException("La sección 'bienes' es requerida y no puede estar vacía");
+        }
+        
+        if (requestOrqDto.debtors() == null || requestOrqDto.debtors().isEmpty()) {
+            throw new IllegalArgumentException("La sección 'deudores' es requerida y no puede estar vacía");
+        }
+        
+        if (requestOrqDto.creditors() == null || requestOrqDto.creditors().isEmpty()) {
+            throw new IllegalArgumentException("La sección 'acreedores' es requerida y no puede estar vacía");
+        }
+
         String micmToken = (String) exchange.getProperty("micmToken");
         
         if (micmToken == null || micmToken.isEmpty()) {
@@ -72,9 +88,9 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
             operations.noticeRegistrationTypeId(),
             operations.reconciliationType(),
             currentDate,
-            operations.comments() != null ? operations.comments() : "string",
-            operations.currency() != null ? operations.currency() : "string",
-            operations.amount() != null ? operations.amount() : 0,
+            operations.comments(),
+            operations.currency(),
+            operations.amount(),
             operations.movableGuaranteeType(),
             0,
             "string",
@@ -88,20 +104,18 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
 
     private List<DebtorDto> mapDebtors(List<DebtorOrqDto> debtors) {
         List<DebtorDto> result = new ArrayList<>();
-        if (debtors != null && !debtors.isEmpty()) {
-            DebtorOrqDto firstDebtor = debtors.get(0);
+        
+        for (DebtorOrqDto debtor : debtors) {
             result.add(new DebtorDto(
-                firstDebtor.rncCedula() != null ? firstDebtor.rncCedula() : "string",
-                0,
-                firstDebtor.debtorName() != null ? firstDebtor.debtorName() : "string",
-                firstDebtor.municipalityId() != null ? firstDebtor.municipalityId() : "string",
-                firstDebtor.address() != null ? firstDebtor.address() : "string",
-                firstDebtor.email() != null ? firstDebtor.email() : "string",
-                firstDebtor.phone() != null ? firstDebtor.phone() : "string",
-                firstDebtor.national() != null ? firstDebtor.national() : true
+                debtor.rncCedula(),
+                parseInteger(debtor.debtorTypeId()),
+                debtor.debtorName(),
+                debtor.municipalityId(),
+                debtor.address(),
+                debtor.email(),
+                debtor.phone(),
+                debtor.national()
             ));
-        } else {
-            result.add(new DebtorDto("string", 0, "string", "string", "string", "string", "string", true));
         }
         return result;
     }
@@ -110,24 +124,21 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
         List<AssetDto> result = new ArrayList<>();
         Date currentDate = generateCurrentDate();
         
-        if (assets != null && !assets.isEmpty()) {
-            AssetOrqDto firstAsset = assets.get(0);
+        for (AssetOrqDto asset : assets) {
             result.add(new AssetDto(
-                firstAsset.propertyTypeId() != null ? firstAsset.propertyTypeId() : 1,
-                firstAsset.assetTypeId() != null ? firstAsset.assetTypeId() : 1,
-                firstAsset.serialNumber() != null ? firstAsset.serialNumber() : "string",
-                firstAsset.assetDescription() != null ? firstAsset.assetDescription() : "string",
-                firstAsset.realEstateIncorporation() != null ? firstAsset.realEstateIncorporation() : true,
-                firstAsset.realEstateIncorporationDescription() != null ? firstAsset.realEstateIncorporationDescription() : "string",
-                "string",
+                asset.propertyTypeId(), // Solo enviar si tiene valor, null si no
+                asset.assetTypeId(),    // Solo enviar si tiene valor, null si no
+                asset.serialNumber(),
+                asset.assetDescription(),
+                asset.realEstateIncorporation(),
+                asset.realEstateIncorporationDescription(),
+                "string", // Estos campos siempre van con valores por defecto según el JSON que funciona
                 "string", 
                 "string",
-                currentDate,
-                firstAsset.registrationRecord() != null ? firstAsset.registrationRecord() : "string",
-                firstAsset.propertyLocation() != null ? firstAsset.propertyLocation() : "string"
+                currentDate, // exclusionDate siempre con fecha actual
+                asset.registrationRecord(),
+                asset.propertyLocation()
             ));
-        } else {
-            result.add(new AssetDto(1, 1, "string", "string", true, "string", "string", "string", "string", currentDate, "string", "string"));
         }
         return result;
     }
@@ -136,20 +147,17 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
         List<CreditorDto> result = new ArrayList<>();
         Date currentDate = generateCurrentDate();
         
-        if (creditors != null && !creditors.isEmpty()) {
-            CreditorOrqDto firstCreditor = creditors.get(0);
+        for (CreditorOrqDto creditor : creditors) {
             result.add(new CreditorDto(
-                firstCreditor.rncCedula() != null ? firstCreditor.rncCedula() : "string",
-                firstCreditor.creditorName() != null ? firstCreditor.creditorName() : "string",
-                firstCreditor.municipalityId() != null ? firstCreditor.municipalityId() : "string",
-                firstCreditor.address() != null ? firstCreditor.address() : "string",
-                firstCreditor.email() != null ? firstCreditor.email() : "string",
-                firstCreditor.phone() != null ? firstCreditor.phone() : "string",
+                creditor.rncCedula(),
+                creditor.creditorName(),
+                creditor.municipalityId(),
+                creditor.address(),
+                creditor.email(),
+                creditor.phone(),
                 currentDate,
-                firstCreditor.national() != null ? firstCreditor.national() : true
+                creditor.national()
             ));
-        } else {
-            result.add(new CreditorDto("string", "string", "string", "string", "string", "string", currentDate, true));
         }
         return result;
     }

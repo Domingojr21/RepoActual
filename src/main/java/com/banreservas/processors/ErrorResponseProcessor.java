@@ -5,6 +5,7 @@ import com.banreservas.util.Constants;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+import java.util.Collections;
 import java.util.Map;
 
 import org.apache.camel.Exchange;
@@ -20,13 +21,11 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 2025-07-01
  */
-
-@ApplicationScoped
+ @ApplicationScoped
 public class ErrorResponseProcessor implements Processor {
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorResponseProcessor.class);
     
-    // Constantes para evitar duplicación de literales
     private static final String REGISTRATION_TYPE = "registration";
 
     @Override
@@ -45,15 +44,12 @@ public class ErrorResponseProcessor implements Processor {
 
         ResponseRegistrationOrqDto response = new ResponseRegistrationOrqDto(
             "false",
-            mensajeTexto, 
-            buildErrorObject(httpCode, mensajeTexto),
-            null // No hay datos en caso de error
+            mensajeTexto,
+            Collections.emptyMap(), 
+            null
         );
 
-        // Establecer el código HTTP en el header
         exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, httpCode);
-        
-        // Establecer el cuerpo de la respuesta
         exchange.getIn().setBody(response);
 
         logger.info("Respuesta de error de registro generada: HTTP {} - {}", httpCode, mensajeTexto);
@@ -61,7 +57,7 @@ public class ErrorResponseProcessor implements Processor {
 
     private String getDefaultMessageForCode(Integer httpCode) {
         return switch (httpCode) {
-            case 400 -> "Request inválido para registro de inscripción";
+            case 400 -> "Validacion de request ha fallado";
             case 401 -> "No autorizado para registro de inscripción";
             case 403 -> "Acceso denegado para registro de inscripción";
             case 500 -> "Error interno del servidor en registro de inscripción";
@@ -69,14 +65,5 @@ public class ErrorResponseProcessor implements Processor {
             case 503 -> "Servicio de registro de inscripción no disponible";
             default -> "Error en el procesamiento de registro de inscripción";
         };
-    }
-
-    private Object buildErrorObject(Integer httpCode, String message) {
-        return Map.of(
-            "code", httpCode.toString(),
-            "message", message,
-            "timestamp", System.currentTimeMillis(),
-            "serviceType", REGISTRATION_TYPE
-        );
     }
 }
