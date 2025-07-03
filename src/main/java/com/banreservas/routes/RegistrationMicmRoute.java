@@ -14,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.SocketTimeoutException;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 
 @ApplicationScoped
 public class RegistrationMicmRoute extends RouteBuilder {
@@ -22,9 +24,6 @@ public class RegistrationMicmRoute extends RouteBuilder {
 
     @ConfigProperty(name = "micm.registration.url")
     String registrationUrl;
-
-    @ConfigProperty(name = "micm.registration.timeout", defaultValue = "30000")
-    String registrationTimeout;
 
     @Inject
     GenerateRegistrationMicmRequestProcessor generateRegistrationRequestProcessor;
@@ -53,7 +52,7 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .handled(true)
                 .log(LoggingLevel.ERROR, logger, "Timeout conectando al servicio registro MICM")
                 .setProperty(Constants.MESSAGE_PROPERTIE, constant(
-                        "Timeout al conectar con servicio de Registro MICM"))
+                        "Timeout al conectar con servicio de Registro Inscripción MICM"))
                 .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(500))
                 .process(errorResponseProcessor)
                 .marshal().json(JsonLibrary.Jackson)
@@ -71,26 +70,43 @@ public class RegistrationMicmRoute extends RouteBuilder {
 
         from("direct:registration-micm")
                 .routeId("registration-micm-service")
-                .log(LoggingLevel.INFO, logger, "Iniciando registro inscripcion MICM")
+                .log(LoggingLevel.INFO, logger, "Iniciando registro inscripción MICM")
 
                 // Preparar request
                 .process(generateRegistrationRequestProcessor)
                 .marshal().json(JsonLibrary.Jackson)
                 
-                // Configurar headers HTTP del request original
-                .setHeader("Canal", exchangeProperty("canalRq"))
-                .setHeader("Usuario", exchangeProperty("usuarioRq"))
-                .setHeader("Terminal", exchangeProperty("terminalRq"))
-                .setHeader("FechaHora", exchangeProperty("fechaHoraRq"))
-                .setHeader("Version", exchangeProperty("versionRq"))
-                .setHeader("Servicio", constant("RegistroInscripcionMICM"))
+                // Configurar headers requeridos por el servicio MICM
+                .setHeader("id_consumidor", constant("123"))
+                .setHeader("fecha_hora", simple("${date:now:yyyy-MM-dd}"))
+                .setHeader("usuario", exchangeProperty("usuarioRq"))
+                .setHeader("terminal", exchangeProperty("terminalRq"))
+                .setHeader("operacion", constant("MasterRegistroInscripcion"))
+                .setHeader("sessionid", exchangeProperty("sessionIdRq"))
                 
                 // Configurar headers HTTP estándar
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))
                 .setHeader(Exchange.CONTENT_TYPE, constant("application/json"))
+                .setHeader("Authorization", exchangeProperty("authorizationRq"))
 
-                // Llamar al servicio
-                .toD(registrationUrl + "?bridgeEndpoint=true&throwExceptionOnFailure=false")
+                .process(exchange -> {
+                    String body = exchange.getIn().getBody(String.class);
+                    logger.info("Request body que se enviará al servicio MICM: {}", body);
+                    
+                    // Log de headers importantes
+                    logger.info("Headers del request:");
+                    logger.info("  Authorization: {}", exchange.getIn().getHeader("Authorization"));
+                    logger.info("  sessionid: {}", exchange.getIn().getHeader("sessionid"));
+                    logger.info("  usuario: {}", exchange.getIn().getHeader("usuario"));
+                    logger.info("  operacion: {}", exchange.getIn().getHeader("operacion"));
+                    logger.info("  id_consumidor: {}", exchange.getIn().getHeader("id_consumidor"));
+                })
+                
+                // TEMPORAL: Comparar con JSON que funciona
+                .process(new com.banreservas.processors.DebugJsonProcessor())
+
+                // Llamar al servicio con configuración robusta de timeout
+                .toD(registrationUrl + "?bridgeEndpoint=true&throwExceptionOnFailure=false&connectionTimeout=30000&socketTimeout=30000")
 
                 // Evaluar respuesta según el código HTTP
                 .choice()
@@ -113,6 +129,12 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .log(LoggingLevel.WARN, logger, "Request inválido para servicio registro - HTTP 400")
                     .process(exchange -> {
                         String responseBody = exchange.getIn().getBody(String.class);
+                        logger.error("===== RESPUESTA COMPLETA HTTP 400 =====");
+                        logger.error("Status Code: {}", exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE));
+                        logger.error("Response Body: {}", responseBody);
+                        logger.error("Headers de respuesta: {}", exchange.getIn().getHeaders());
+                        logger.error("==========================================");
+                        
                         String errorMessage = "Request inválido para registro de inscripción";
                         
                         try {
@@ -144,10 +166,19 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
                 
+                // 403 - Forbidden
+                .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(403))
+                    .log(LoggingLevel.WARN, logger, "Acceso denegado para servicio registro - HTTP 403")
+                    .setProperty(Constants.MESSAGE_PROPERTIE, constant("No tiene permisos para realizar esta operación de registro"))
+                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(403))
+                    .process(errorResponseProcessor)
+                    .marshal().json(JsonLibrary.Jackson)
+                    .stop()
+                
                 // 500 - Error interno
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(500))
                     .log(LoggingLevel.ERROR, logger, "Error interno en servicio registro - HTTP 500")
-                    .setProperty(Constants.MESSAGE_PROPERTIE, constant("Error interno en servicio de registro"))
+                    .setProperty(Constants.MESSAGE_PROPERTIE, constant("Error interno en servicio de registro inscripción"))
                     .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(502))
                     .process(errorResponseProcessor)
                     .marshal().json(JsonLibrary.Jackson)
@@ -158,7 +189,7 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .log(LoggingLevel.ERROR, logger, "Error inesperado en servicio registro - HTTP ${header.CamelHttpResponseCode}")
                     .process(exchange -> {
                         Integer httpCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
-                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, "Error inesperado en registro: HTTP " + httpCode);
+                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, "Error inesperado en registro inscripción: HTTP " + httpCode);
                         exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 502);
                     })
                     .process(errorResponseProcessor)

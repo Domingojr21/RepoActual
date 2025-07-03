@@ -4,6 +4,9 @@ import com.banreservas.model.outbound.registration.RegistrationResponse;
 import com.banreservas.model.outbound.orq.ResponseRegistrationOrqDto;
 import com.banreservas.model.outbound.orq.RegistrationDataOrqDto;
 import com.banreservas.util.Constants;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -11,6 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.SimpleDateFormat;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * Processor que mapea la respuesta del backend MICM al formato del orquestador.
@@ -21,6 +26,7 @@ import java.text.SimpleDateFormat;
  * @version 1.0
  * @since 2025-07-01
  */
+
 @ApplicationScoped
 public class MapRegistrationBackendResponseProcessor implements Processor {
 
@@ -29,70 +35,114 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        logger.info("Mapping MICM backend response");
+        logger.info("Mapeando respuesta del backend MICM de registro");
 
-        String responseType = (String) exchange.getProperty("Tipo");
-        
-        if ("0".equals(responseType)) {
-            processSuccessfulResponse(exchange);
-        } else {
-            processErrorResponse(exchange);
-        }
-    }
-
-    private void processSuccessfulResponse(Exchange exchange) {
         try {
-            RegistrationResponse backendResponse = exchange.getIn().getBody(RegistrationResponse.class);
+            String jsonResponse = exchange.getIn().getBody(String.class);
             
-            if (backendResponse != null && backendResponse.body() != null && backendResponse.body().data() != null) {
-                
-                var registrationData = backendResponse.body().data();
-                
-                // Create simplified data for orchestrator
-                RegistrationDataOrqDto dataOrq = new RegistrationDataOrqDto(
-                    registrationData.id(),
-                    registrationData.numeroRegistro(),
-                    formatDate(registrationData.fechaRegistro()),
-                    determineStatus(registrationData)
-                );
+            // Validar que la respuesta no esté vacía o truncada
+            if (jsonResponse == null || jsonResponse.trim().isEmpty()) {
+                logger.error("Respuesta del backend está vacía");
+                handleError(exchange, "Respuesta vacía del servicio de registro MICM", "502");
+                return;
+            }
+            
+            // Log de la respuesta para debugging (primeros 500 caracteres)
+            logger.debug("Respuesta del backend (primeros 500 chars): {}", 
+                        jsonResponse.length() > 500 ? jsonResponse.substring(0, 500) + "..." : jsonResponse);
+            
+            // Verificar si la respuesta está completa (debe terminar con '}' o ']')
+            String trimmedResponse = jsonResponse.trim();
+            if (!trimmedResponse.endsWith("}") && !trimmedResponse.endsWith("]")) {
+                logger.error("Respuesta del backend está incompleta o truncada. Termina con: '{}'", 
+                           trimmedResponse.substring(Math.max(0, trimmedResponse.length() - 50)));
+                handleError(exchange, "Respuesta incompleta del servicio de registro MICM - posible timeout de red", "502");
+                return;
+            }
 
-                ResponseRegistrationOrqDto responseOrq = new ResponseRegistrationOrqDto(
-                    "true",
-                    "Registration inscription processed successfully",
-                    null,
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.configure(MapperFeature.ACCEPT_CASE_INSENSITIVE_PROPERTIES, true);
+            RegistrationResponse backendResponse = mapper.readValue(jsonResponse, RegistrationResponse.class);
+
+            if (backendResponse != null && backendResponse.header() != null) {
+                
+                // Inicializar variables
+                String messageString = ""; // String vacío para éxito
+                String succeeded = "false";
+                RegistrationDataOrqDto dataOrq = null;
+
+                if (backendResponse.body() != null && backendResponse.body().data() != null) {
+                    var registrationData = backendResponse.body().data();
+                    
+                    // Crear datos simplificados para el orquestador
+                    dataOrq = new RegistrationDataOrqDto(
+                        registrationData.id(),
+                        registrationData.numeroRegistro(),
+                        formatDate(registrationData.fechaRegistro()),
+                        determineStatus(registrationData)
+                    );
+                    
+                    succeeded = "true";
+                    // Message VACÍO para éxito
+                    messageString = "";
+                }
+
+                // Validar código de respuesta del header
+                if (backendResponse.header().responseCode() != 200) {
+                    succeeded = "false";
+                    
+                    // Message con contenido para errores
+                    messageString = backendResponse.header().responseMessage() != null ? 
+                                   backendResponse.header().responseMessage() : 
+                                   "Error en el registro de inscripción";
+                    
+                    exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, backendResponse.header().responseCode());
+                    dataOrq = null; // No hay datos en caso de error
+                }
+
+                ResponseRegistrationOrqDto response = new ResponseRegistrationOrqDto(
+                    succeeded,
+                    messageString, // String vacío para éxito, String con contenido para error
+                    Collections.emptyMap(), // errors como OBJETO VACÍO en caso exitoso
                     dataOrq
                 );
 
-                exchange.getIn().setBody(responseOrq);
-                logger.info("Successful response mapped - ID: {}", registrationData.id());
-                
+                exchange.getIn().setBody(response);
+                logger.info("Respuesta de registro procesada: succeeded={}, hasData={}", succeeded, dataOrq != null);
+
             } else {
-                logger.warn("Backend response is empty or incomplete");
-                processErrorResponse(exchange);
+                handleError(exchange, "Respuesta inválida del servicio de registro MICM", "502");
             }
+
+        } catch (com.fasterxml.jackson.core.JsonParseException e) {
+            logger.error("Error parsing JSON del backend - respuesta malformada: {}", e.getMessage());
+            handleError(exchange, "Respuesta malformada del servicio de registro MICM", "502");
+            
+        } catch (com.fasterxml.jackson.databind.JsonMappingException e) {
+            logger.error("Error mapeando JSON del backend: {}", e.getMessage());
+            handleError(exchange, "Error mapeando respuesta del servicio de registro MICM", "502");
             
         } catch (Exception e) {
-            logger.error("Error mapping successful response: {}", e.getMessage(), e);
-            exchange.setProperty(Constants.MESSAGE_PROPERTIE, "Error processing backend response");
-            processErrorResponse(exchange);
+            logger.error("Error procesando respuesta del backend de registro: {}", e.getMessage(), e);
+            handleError(exchange, "Error interno al procesar la respuesta del backend de registro", "500");
         }
     }
-
-    private void processErrorResponse(Exchange exchange) {
-        String message = (String) exchange.getProperty(Constants.MESSAGE_PROPERTIE);
-        if (message == null || message.isEmpty()) {
-            message = "Error during registration processing";
-        }
-
+    
+    private void handleError(Exchange exchange, String errorMessage, String errorCode) {
         ResponseRegistrationOrqDto errorResponse = new ResponseRegistrationOrqDto(
             "false",
-            message,
-            buildErrorInfo(exchange),
+            errorMessage, // Message como STRING para errores
+            Map.of(  // errors como OBJETO con información del error
+                "code", errorCode,
+                "message", errorMessage,
+                "timestamp", System.currentTimeMillis(),
+                "serviceType", "registration"
+            ),
             null
         );
 
         exchange.getIn().setBody(errorResponse);
-        logger.warn("Error response mapped: {}", message);
+        logger.error("Error mapeado: {}", errorMessage);
     }
 
     private String formatDate(java.util.Date date) {
@@ -103,27 +153,14 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
     }
 
     private String determineStatus(com.banreservas.model.outbound.registration.RegistrationDataDto data) {
-        if (data.descripcionEstatus() != null) {
+        if (data.descripcionEstatus() != null && !data.descripcionEstatus().isEmpty()) {
             return data.descripcionEstatus();
         }
         
         if (data.idEstado() != null) {
-            return "Status ID: " + data.idEstado();
+            return "Estado ID: " + data.idEstado();
         }
         
-        return "Registered";
+        return "Registrado";
     }
-
-    private Object buildErrorInfo(Exchange exchange) {
-        String code = (String) exchange.getProperty("Codigo");
-        String message = (String) exchange.getProperty(Constants.MESSAGE_PROPERTIE);
-        
-        return new ErrorInfo(
-            code != null ? code : "500",
-            message != null ? message : "Unknown error",
-            System.currentTimeMillis()
-        );
-    }
-
-    private record ErrorInfo(String code, String message, long timestamp) {}
 }

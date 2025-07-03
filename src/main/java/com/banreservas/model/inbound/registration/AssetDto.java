@@ -1,5 +1,6 @@
 package com.banreservas.model.inbound.registration;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -44,6 +45,7 @@ public record AssetDto(
         String realEstateParcelNumber,
 
         @JsonProperty("exclusionDate")
+        @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
         Date exclusionDate,
 
         @JsonProperty("registrationRecord")

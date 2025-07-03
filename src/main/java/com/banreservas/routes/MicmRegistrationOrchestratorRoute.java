@@ -83,6 +83,8 @@ public class MicmRegistrationOrchestratorRoute extends RouteBuilder {
                 .setProperty("fechaHoraRq", header("FechaHora"))
                 .setProperty("versionRq", header("Version"))
                 .setProperty("servicioRq", header("Servicio"))
+                .setProperty("sessionIdRq", header("sessionId"))
+                .setProperty("authorizationRq", header("Authorization"))
 
                 .setProperty("InitialRequest", body())
 

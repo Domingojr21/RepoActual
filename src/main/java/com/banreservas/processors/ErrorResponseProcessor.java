@@ -1,8 +1,11 @@
 package com.banreservas.processors;
 
 import com.banreservas.model.outbound.orq.ResponseRegistrationOrqDto;
+import com.banreservas.util.Constants;
 
 import jakarta.enterprise.context.ApplicationScoped;
+
+import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -17,76 +20,63 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @since 2025-07-01
  */
+
 @ApplicationScoped
 public class ErrorResponseProcessor implements Processor {
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorResponseProcessor.class);
+    
+    // Constantes para evitar duplicación de literales
+    private static final String REGISTRATION_TYPE = "registration";
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        logger.info("Procesando respuesta de error");
+        logger.info("Procesando respuesta de error para registro MICM");
 
-        String errorMessage = getErrorMessage(exchange);
-        String errorCode = getErrorCode(exchange);
+        Integer httpCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+        if (httpCode == null) {
+            httpCode = 500;
+        }
 
-        logger.error("Error procesado - Código: {}, Mensaje: {}", errorCode, errorMessage);
+        String mensajeTexto = exchange.getProperty(Constants.MESSAGE_PROPERTIE, String.class);
+        if (mensajeTexto == null || mensajeTexto.isEmpty()) {
+            mensajeTexto = getDefaultMessageForCode(httpCode);
+        }
 
-        // Crear respuesta de error estructurada
-        ResponseRegistrationOrqDto errorResponse = new ResponseRegistrationOrqDto(
+        ResponseRegistrationOrqDto response = new ResponseRegistrationOrqDto(
             "false",
-            errorMessage,
-            buildErrorObject(errorCode, errorMessage),
+            mensajeTexto, 
+            buildErrorObject(httpCode, mensajeTexto),
             null // No hay datos en caso de error
         );
 
-        exchange.getIn().setBody(errorResponse);
+        // Establecer el código HTTP en el header
+        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, httpCode);
+        
+        // Establecer el cuerpo de la respuesta
+        exchange.getIn().setBody(response);
+
+        logger.info("Respuesta de error de registro generada: HTTP {} - {}", httpCode, mensajeTexto);
     }
 
-    /**
-     * Extrae el mensaje de error del exchange.
-     * 
-     * @param exchange El intercambio de Camel
-     * @return Mensaje de error
-     */
-    private String getErrorMessage(Exchange exchange) {
-        String message = (String) exchange.getProperty("Mensaje");
-        if (message != null && !message.isEmpty()) {
-            return message;
-        }
-
-        // Mensaje por defecto si no hay uno específico
-        return "Error interno del servidor durante el procesamiento del registro";
+    private String getDefaultMessageForCode(Integer httpCode) {
+        return switch (httpCode) {
+            case 400 -> "Request inválido para registro de inscripción";
+            case 401 -> "No autorizado para registro de inscripción";
+            case 403 -> "Acceso denegado para registro de inscripción";
+            case 500 -> "Error interno del servidor en registro de inscripción";
+            case 502 -> "Error en servicio externo de registro de inscripción";
+            case 503 -> "Servicio de registro de inscripción no disponible";
+            default -> "Error en el procesamiento de registro de inscripción";
+        };
     }
 
-    /**
-     * Extrae el código de error del exchange.
-     * 
-     * @param exchange El intercambio de Camel
-     * @return Código de error
-     */
-    private String getErrorCode(Exchange exchange) {
-        Object codigo = exchange.getProperty("Codigo");
-        if (codigo != null) {
-            return codigo.toString();
-        }
-
-        // Código por defecto
-        return "500";
+    private Object buildErrorObject(Integer httpCode, String message) {
+        return Map.of(
+            "code", httpCode.toString(),
+            "message", message,
+            "timestamp", System.currentTimeMillis(),
+            "serviceType", REGISTRATION_TYPE
+        );
     }
-
-    /**
-     * Construye el objeto de error con información detallada.
-     * 
-     * @param errorCode Código del error
-     * @param errorMessage Mensaje del error
-     * @return Objeto con información del error
-     */
-    private Object buildErrorObject(String errorCode, String errorMessage) {
-        return new ErrorDetail(errorCode, errorMessage, System.currentTimeMillis());
-    }
-
-    /**
-     * Clase interna para representar detalles del error.
-     */
-    private record ErrorDetail(String code, String message, long timestamp) {}
 }

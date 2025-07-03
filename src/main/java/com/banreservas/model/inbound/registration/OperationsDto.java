@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 import java.io.Serializable;
-import java.util.Date;
 
 /**
  * DTO que encapsula los datos de las operaciones para el registro de inscripción.
@@ -14,6 +13,7 @@ import java.util.Date;
  * @version 1.0
  * @since 2025-07-01
  */
+
 @RegisterForReflection
 public record OperationsDto(
         @JsonProperty("noticeRegistrationTypeId")
@@ -23,7 +23,7 @@ public record OperationsDto(
         Integer reconciliationType,
 
         @JsonProperty("expirationDate")
-        Date expirationDate,
+        String expirationDate,
 
         @JsonProperty("comments")
         String comments,

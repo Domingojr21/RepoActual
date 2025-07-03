@@ -13,6 +13,7 @@ import java.io.Serializable;
  * @version 1.0
  * @since 2025-07-01
  */
+
 @RegisterForReflection
 public record OperationsOrqDto(
         @JsonProperty("idTipoAvisoInscripcion")
@@ -34,6 +35,27 @@ public record OperationsOrqDto(
         Integer amount,
 
         @JsonProperty("tipoDeGarantiaMobiliario")
-        Integer movableGuaranteeType
+        Integer movableGuaranteeType,
+        
+        @JsonProperty("idTipoEmbargo")
+        Integer seizureTypeId,
+        
+        @JsonProperty("estadoEmbargoNoDispAdmjud")
+        String seizureStateNotAvailableAdminJud,
+        
+        @JsonProperty("ejecucionDescripcionObligaciongarantizada")
+        String executionGuaranteedObligationDescription,
+        
+        @JsonProperty("ejecucionDescripcionIncumplimientoDeudor")
+        String executionDebtorDefaultDescription,
+        
+        @JsonProperty("ejecucionDescripcionPruebaIncumplimiento")
+        String executionDefaultEvidenceDescription,
+        
+        @JsonProperty("ejecucionDescripcionMontoSaldo")
+        Integer executionBalanceAmountDescription,
+        
+        @JsonProperty("ejecucionCostaProcesales")
+        Integer executionLegalCosts
 ) implements Serializable {
 }
