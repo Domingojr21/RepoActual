@@ -20,7 +20,7 @@ public class RegistrationMicmRoute extends RouteBuilder {
 
     private static final Logger logger = LoggerFactory.getLogger(RegistrationMicmRoute.class);
 
-    @ConfigProperty(name = "micm.registration.url", defaultValue = "http://localhost:8080/api/v1/registro")
+    @ConfigProperty(name = "micm.registration.url")
     String registrationUrl;
 
     @ConfigProperty(name = "micm.registration.timeout", defaultValue = "30000")
@@ -83,7 +83,7 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .setHeader("Terminal", exchangeProperty("terminalRq"))
                 .setHeader("FechaHora", exchangeProperty("fechaHoraRq"))
                 .setHeader("Version", exchangeProperty("versionRq"))
-                .setHeader("Servicio", constant("MasterRegistroInscripcionMICM"))
+                .setHeader("Servicio", constant("RegistroInscripcionMICM"))
                 
                 // Configurar headers HTTP estándar
                 .setHeader(Exchange.HTTP_METHOD, constant("POST"))

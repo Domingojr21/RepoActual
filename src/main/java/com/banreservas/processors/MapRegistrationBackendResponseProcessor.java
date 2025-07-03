@@ -1,11 +1,10 @@
 package com.banreservas.processors;
 
 import com.banreservas.model.outbound.registration.RegistrationResponse;
-
-import jakarta.enterprise.context.ApplicationScoped;
-
 import com.banreservas.model.outbound.orq.ResponseRegistrationOrqDto;
 import com.banreservas.model.outbound.orq.RegistrationDataOrqDto;
+import com.banreservas.util.Constants;
+import jakarta.enterprise.context.ApplicationScoped;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 import org.slf4j.Logger;
@@ -30,23 +29,18 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        logger.info("Mapeando respuesta del backend MICM");
+        logger.info("Mapping MICM backend response");
 
-        String tipoRespuesta = (String) exchange.getProperty("Tipo");
+        String responseType = (String) exchange.getProperty("Tipo");
         
-        if ("0".equals(tipoRespuesta)) {
-            procesarRespuestaExitosa(exchange);
+        if ("0".equals(responseType)) {
+            processSuccessfulResponse(exchange);
         } else {
-            procesarRespuestaError(exchange);
+            processErrorResponse(exchange);
         }
     }
 
-    /**
-     * Procesa una respuesta exitosa del backend.
-     * 
-     * @param exchange El intercambio de Camel
-     */
-    private void procesarRespuestaExitosa(Exchange exchange) {
+    private void processSuccessfulResponse(Exchange exchange) {
         try {
             RegistrationResponse backendResponse = exchange.getIn().getBody(RegistrationResponse.class);
             
@@ -54,64 +48,53 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
                 
                 var registrationData = backendResponse.body().data();
                 
-                // Crear datos simplificados para el orquestador
+                // Create simplified data for orchestrator
                 RegistrationDataOrqDto dataOrq = new RegistrationDataOrqDto(
                     registrationData.id(),
                     registrationData.numeroRegistro(),
                     formatDate(registrationData.fechaRegistro()),
-                    determineEstado(registrationData)
+                    determineStatus(registrationData)
                 );
 
                 ResponseRegistrationOrqDto responseOrq = new ResponseRegistrationOrqDto(
                     "true",
-                    "Registro de inscripción procesado exitosamente",
+                    "Registration inscription processed successfully",
                     null,
                     dataOrq
                 );
 
                 exchange.getIn().setBody(responseOrq);
-                logger.info("Respuesta exitosa mapeada - ID: {}", registrationData.id());
+                logger.info("Successful response mapped - ID: {}", registrationData.id());
                 
             } else {
-                logger.warn("Respuesta del backend está vacía o incompleta");
-                procesarRespuestaError(exchange);
+                logger.warn("Backend response is empty or incomplete");
+                processErrorResponse(exchange);
             }
             
         } catch (Exception e) {
-            logger.error("Error al mapear respuesta exitosa: {}", e.getMessage(), e);
-            exchange.setProperty("Mensaje", "Error al procesar respuesta del backend");
-            procesarRespuestaError(exchange);
+            logger.error("Error mapping successful response: {}", e.getMessage(), e);
+            exchange.setProperty(Constants.MESSAGE_PROPERTIE, "Error processing backend response");
+            processErrorResponse(exchange);
         }
     }
 
-    /**
-     * Procesa una respuesta de error.
-     * 
-     * @param exchange El intercambio de Camel
-     */
-    private void procesarRespuestaError(Exchange exchange) {
-        String mensaje = (String) exchange.getProperty("Mensaje");
-        if (mensaje == null || mensaje.isEmpty()) {
-            mensaje = "Error durante el procesamiento del registro";
+    private void processErrorResponse(Exchange exchange) {
+        String message = (String) exchange.getProperty(Constants.MESSAGE_PROPERTIE);
+        if (message == null || message.isEmpty()) {
+            message = "Error during registration processing";
         }
 
         ResponseRegistrationOrqDto errorResponse = new ResponseRegistrationOrqDto(
             "false",
-            mensaje,
+            message,
             buildErrorInfo(exchange),
             null
         );
 
         exchange.getIn().setBody(errorResponse);
-        logger.warn("Respuesta de error mapeada: {}", mensaje);
+        logger.warn("Error response mapped: {}", message);
     }
 
-    /**
-     * Formatea una fecha para la respuesta.
-     * 
-     * @param date Fecha a formatear
-     * @return Fecha formateada como string
-     */
     private String formatDate(java.util.Date date) {
         if (date == null) {
             return null;
@@ -119,43 +102,28 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
         return DATE_FORMAT.format(date);
     }
 
-    /**
-     * Determina el estado basado en los datos del registro.
-     * 
-     * @param data Datos del registro
-     * @return Estado descriptivo
-     */
-    private String determineEstado(com.banreservas.model.outbound.registration.RegistrationDataDto data) {
+    private String determineStatus(com.banreservas.model.outbound.registration.RegistrationDataDto data) {
         if (data.descripcionEstatus() != null) {
             return data.descripcionEstatus();
         }
         
         if (data.idEstado() != null) {
-            return "Estado ID: " + data.idEstado();
+            return "Status ID: " + data.idEstado();
         }
         
-        return "Registrado";
+        return "Registered";
     }
 
-    /**
-     * Construye información del error para la respuesta.
-     * 
-     * @param exchange El intercambio de Camel
-     * @return Información del error
-     */
     private Object buildErrorInfo(Exchange exchange) {
-        String codigo = (String) exchange.getProperty("Codigo");
-        String mensaje = (String) exchange.getProperty("Mensaje");
+        String code = (String) exchange.getProperty("Codigo");
+        String message = (String) exchange.getProperty(Constants.MESSAGE_PROPERTIE);
         
         return new ErrorInfo(
-            codigo != null ? codigo : "500",
-            mensaje != null ? mensaje : "Error desconocido",
+            code != null ? code : "500",
+            message != null ? message : "Unknown error",
             System.currentTimeMillis()
         );
     }
 
-    /**
-     * Clase interna para información de errores.
-     */
     private record ErrorInfo(String code, String message, long timestamp) {}
 }

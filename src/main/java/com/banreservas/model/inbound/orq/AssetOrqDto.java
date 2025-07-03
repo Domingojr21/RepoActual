@@ -33,18 +33,6 @@ public record AssetOrqDto(
         @JsonProperty("incorporacionInmuebleDescripcion")
         String realEstateIncorporationDescription,
 
-        @JsonProperty("incorporacionInmuebleMatricula")
-        String realEstateIncorporationRegistration,
-
-        @JsonProperty("incorporacionInmuebleDistritoCatastral")
-        String realEstateCadastralDistrict,
-
-        @JsonProperty("incorporacionInmuebleNumeroParcela")
-        String realEstateParcelNumber,
-
-        @JsonProperty("fechaExclusion")
-        String exclusionDate,
-
         @JsonProperty("registroDondeSeEnCuentraInscrito")
         String registrationRecord,
 

@@ -33,9 +33,6 @@ public record CreditorOrqDto(
         @JsonProperty("telefono")
         String phone,
 
-        @JsonProperty("fechaExclusion")
-        String exclusionDate,
-
         @JsonProperty("nacional")
         Boolean national
 ) implements Serializable {

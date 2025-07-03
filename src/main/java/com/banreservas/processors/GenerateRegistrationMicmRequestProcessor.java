@@ -1,9 +1,7 @@
 package com.banreservas.processors;
 
-import com.banreservas.model.inbound.orq.CreditorOrqDto;
-import com.banreservas.model.inbound.orq.CreditorOrqDto;
-import com.banreservas.model.inbound.orq.CreditorOrqDto;
 import com.banreservas.model.inbound.orq.AssetOrqDto;
+import com.banreservas.model.inbound.orq.CreditorOrqDto;
 import com.banreservas.model.inbound.orq.DebtorOrqDto;
 import com.banreservas.model.inbound.orq.OperationsOrqDto;
 import com.banreservas.model.inbound.orq.RequestRegistrationOrqDto;
@@ -27,45 +25,45 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
 
     @Override
     public void process(Exchange exchange) throws Exception {
-        logger.info("Generando request para Master Registro Inscripcion MICM");
+        logger.info("Generating request for Master Registration Inscription MICM");
 
         RequestRegistrationOrqDto requestOrqDto = (RequestRegistrationOrqDto) exchange.getProperty("InitialRequest");
         
         if (requestOrqDto == null) {
-            logger.error("RequestRegistrationOrqDto es null - Request body es requerido");
-            throw new IllegalArgumentException("Request body es requerido");
+            logger.error("RequestRegistrationOrqDto is null - Request body is required");
+            throw new IllegalArgumentException("Request body is required");
         }
 
-        String tokenMicm = (String) exchange.getProperty("micmToken");
+        String micmToken = (String) exchange.getProperty("micmToken");
         
-        if (tokenMicm == null || tokenMicm.isEmpty()) {
-            logger.error("Token MICM no encontrado en el exchange");
-            throw new IllegalArgumentException("Token de autenticación no disponible");
+        if (micmToken == null || micmToken.isEmpty()) {
+            logger.error("MICM token not found in exchange");
+            throw new IllegalArgumentException("Authentication token not available");
         }
 
-        logger.info("Token MICM obtenido exitosamente");
+        logger.info("MICM token obtained successfully");
 
-        // Mapear operaciones
+        // Map operations
         OperationsDto operations = mapOperations(requestOrqDto.operations());
 
-        // Mapear deudores
+        // Map debtors
         List<DebtorDto> debtors = mapDebtors(requestOrqDto.debtors());
 
-        // Mapear activos/bienes
+        // Map assets
         List<AssetDto> assets = mapAssets(requestOrqDto.assets());
 
-        // Mapear acreedores
+        // Map creditors
         List<CreditorDto> creditors = mapCreditors(requestOrqDto.creditors());
 
-        // Crear token de seguridad
-        TokenRegistrationDto token = new TokenRegistrationDto(tokenMicm);
+        // Create security token
+        TokenRegistrationDto token = new TokenRegistrationDto(micmToken);
         SecurityRegistrationDto security = new SecurityRegistrationDto(token);
 
-        RequestRegistrationDto requestBackend = new RequestRegistrationDto(
+        RequestRegistrationDto backendRequest = new RequestRegistrationDto(
             operations, debtors, assets, creditors, security);
 
-        exchange.getIn().setBody(requestBackend);
-        logger.info("Request de registro MICM generado exitosamente");
+        exchange.getIn().setBody(backendRequest);
+        logger.info("MICM registration request generated successfully");
     }
 
     private OperationsDto mapOperations(OperationsOrqDto operations) {
@@ -159,7 +157,7 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
         try {
             return DATE_FORMAT.parse(dateString);
         } catch (Exception e) {
-            logger.warn("Error parseando fecha: {}", dateString);
+            logger.warn("Error parsing date: {}", dateString);
             return null;
         }
     }
@@ -171,7 +169,7 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
-            logger.warn("Error parseando entero: {}", value);
+            logger.warn("Error parsing integer: {}", value);
             return null;
         }
     }

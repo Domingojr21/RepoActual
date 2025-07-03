@@ -48,21 +48,21 @@ public class MicmRegistrationOrchestratorRoute extends RouteBuilder {
 
         restConfiguration()
                 .component("platform-http")
-                .contextPath("/api/v1")
+                .contextPath("registration/micm")
                 .bindingMode(RestBindingMode.json)
-                .apiProperty("api.title", "Orquestador de registro de inscripciones MICM")
+                .apiProperty("api.title", "Orquestador registro inscripciones MICM")
                 .apiProperty("api.version", "1.0.0")
                 .apiProperty("cors", "true")
                 .apiProperty("prettyPrint", "true");
 
-        rest("/registration")
-                .put("test")
+        rest("/api/v1")
+                .post("registrationInscription")
                 .type(RequestRegistrationOrqDto.class)
-                .to("direct:MasterRegistroInscripcionEndpoint");
+                .to("direct:RegistrationInscriptionEndpoint");
 
         // Ruta principal: JSON > Login > Registro > Respuesta JSON
-        from("direct:MasterRegistroInscripcionEndpoint")
-                .routeId("master-registro-inscripcion-orchestrator")
+        from("direct:RegistrationInscriptionEndpoint")
+                .routeId("registration-inscription-orchestrator")
                 .log(LoggingLevel.INFO, logger, "Orquestación de registro iniciada")
                 
                 // Validar que el body no esté vacío
