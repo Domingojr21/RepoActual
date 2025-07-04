@@ -10,7 +10,7 @@ import java.util.List;
  * DTO principal para la solicitud de registro de inscripción en MICM.
  * Contiene las operaciones, deudores, activos, acreedores y datos de seguridad.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

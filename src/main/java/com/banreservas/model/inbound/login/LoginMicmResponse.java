@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param header Información del header de respuesta (código y mensaje)
  * @param body Cuerpo de la respuesta con datos de seguridad y token
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

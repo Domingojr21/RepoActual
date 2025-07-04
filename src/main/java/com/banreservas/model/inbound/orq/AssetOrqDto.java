@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO simplificado de activo para el orquestador.
  * Versión reducida de AssetDto para uso interno del orquestador.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

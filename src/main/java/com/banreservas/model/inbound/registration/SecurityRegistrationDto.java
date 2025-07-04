@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO que encapsula la información de seguridad para las operaciones de registro.
  * Contiene el token de autenticación necesario para las llamadas al servicio MICM.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

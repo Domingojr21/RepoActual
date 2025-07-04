@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO que encapsula los datos de las operaciones para el registro de inscripción.
  * Incluye información sobre tipos de aviso, conciliación, fechas y montos.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

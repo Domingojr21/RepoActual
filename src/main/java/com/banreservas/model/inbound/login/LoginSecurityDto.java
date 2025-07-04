@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @param token Objeto que contiene el token JWT y sus propiedades
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

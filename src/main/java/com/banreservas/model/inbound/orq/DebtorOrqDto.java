@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO simplificado de deudor para el orquestador.
  * Versión reducida de DebtorDto para uso interno del orquestador.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

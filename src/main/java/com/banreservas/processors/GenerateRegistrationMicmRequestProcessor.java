@@ -19,6 +19,21 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * Processor que transforma el request del orquestador al formato requerido por el servicio MICM.
+ * Convierte los DTOs simplificados del orquestador a los DTOs completos del backend.
+ * 
+ * Este processor realiza las siguientes transformaciones:
+ * - Mapea OperationsOrqDto a OperationsDto con valores por defecto
+ * - Convierte listas de deudores, activos y acreedores al formato del backend
+ * - Agrega información de seguridad con el token MICM obtenido del login
+ * - Genera fechas actuales donde sea necesario
+ * - Valida que todos los campos requeridos estén presentes
+ * 
+ * @author Domingo Ruiz c-djruiz@banreservas.com
+ * @version 1.0
+ * @since 2025-07-2
+ */
 @ApplicationScoped
 public class GenerateRegistrationMicmRequestProcessor implements Processor {
 
@@ -29,7 +44,7 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
         logger.info("Generando request para Master Registration Inscription MICM");
-
+ 
         RequestRegistrationOrqDto requestOrqDto = (RequestRegistrationOrqDto) exchange.getProperty("InitialRequest");
         
         if (requestOrqDto == null) {
@@ -93,10 +108,10 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
             operations.amount(),
             operations.movableGuaranteeType(),
             0,
-            "string",
-            "string",
-            "string",
-            "string",
+            "",
+            "",
+            "",
+            "",
             0,
             0
         );
@@ -126,16 +141,16 @@ public class GenerateRegistrationMicmRequestProcessor implements Processor {
         
         for (AssetOrqDto asset : assets) {
             result.add(new AssetDto(
-                asset.propertyTypeId(), // Solo enviar si tiene valor, null si no
-                asset.assetTypeId(),    // Solo enviar si tiene valor, null si no
+                asset.propertyTypeId(), 
+                asset.assetTypeId(),    
                 asset.serialNumber(),
                 asset.assetDescription(),
                 asset.realEstateIncorporation(),
                 asset.realEstateIncorporationDescription(),
-                "string", // Estos campos siempre van con valores por defecto según el JSON que funciona
-                "string", 
-                "string",
-                currentDate, // exclusionDate siempre con fecha actual
+                "", 
+                "", 
+                "",
+                currentDate, 
                 asset.registrationRecord(),
                 asset.propertyLocation()
             ));

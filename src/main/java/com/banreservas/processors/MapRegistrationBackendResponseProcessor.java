@@ -3,7 +3,6 @@ package com.banreservas.processors;
 import com.banreservas.model.outbound.registration.RegistrationResponse;
 import com.banreservas.model.outbound.orq.ResponseRegistrationOrqDto;
 import com.banreservas.model.outbound.orq.CompleteRegistrationDataOrqDto;
-import com.banreservas.util.Constants;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -14,16 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.Map;
 
 /**
  * Processor que mapea la respuesta del backend MICM al formato del orquestador.
  * Transforma la respuesta completa del servicio de registro a la estructura 
  * completa requerida por el cliente.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
- * @since 2025-07-01
+ * @since 2025-07-02
  */
 
 @ApplicationScoped
@@ -46,7 +44,7 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
             
             String trimmedResponse = jsonResponse.trim();
             if (!trimmedResponse.endsWith("}") && !trimmedResponse.endsWith("]")) {
-                logger.error("Respuesta del backend está incompleta o truncada");
+                logger.error("Respuesta del backend está incompleta");
                 handleError(exchange, "Respuesta incompleta del servicio de registro MICM", "502");
                 return;
             }
@@ -116,7 +114,7 @@ public class MapRegistrationBackendResponseProcessor implements Processor {
         ResponseRegistrationOrqDto errorResponse = new ResponseRegistrationOrqDto(
             "false",
             errorMessage,
-            Collections.emptyMap(),  // errors como objeto vacío {}
+            Collections.emptyMap(),  
             null
         );
 

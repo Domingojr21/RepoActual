@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO simplificado que contiene los datos esenciales del registro para la respuesta del orquestador.
  * Incluye solo los campos más relevantes del registro creado.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */
@@ -19,12 +19,12 @@ public record RegistrationDataOrqDto(
         Integer id,
 
         @JsonProperty("numeroRegistro")
-        String numeroRegistro,
+        String registrationNumber,
 
         @JsonProperty("fechaRegistro")
-        String fechaRegistro,
+        String registrationDate,
 
         @JsonProperty("estado")
-        String estado
+        String status
 ) implements Serializable {
 }

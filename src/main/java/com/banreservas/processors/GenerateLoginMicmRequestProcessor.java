@@ -8,6 +8,18 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Processor que genera la solicitud de autenticación para el servicio LogInMICM_WS.
+ * Construye el request con las credenciales configuradas y prepara los headers necesarios.
+ * 
+ * Este processor toma las credenciales del usuario desde la configuración de la aplicación
+ * y genera un objeto LoginMicmRequest que será enviado al servicio de autenticación MICM.
+ * También configura los headers HTTP requeridos para la llamada.
+ * 
+ * @author Domingo Ruiz c-djruiz@banreservas.com
+ * @version 1.0
+ * @since 2025-06-10
+ */
 @ApplicationScoped
 public class GenerateLoginMicmRequestProcessor implements Processor {
 

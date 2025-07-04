@@ -12,7 +12,7 @@ import java.util.Date;
  * DTO que representa la información de un activo o bien en el sistema MICM.
  * Incluye detalles sobre propiedades, inmuebles y características del activo.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

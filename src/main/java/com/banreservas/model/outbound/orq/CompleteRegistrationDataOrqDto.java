@@ -10,7 +10,7 @@ import java.util.Collections;
  * DTO que contiene la estructura completa de datos del registro para la respuesta del orquestador.
  * Incluye todos los campos del servicio original, aunque estén vacíos.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */
@@ -21,184 +21,182 @@ public class CompleteRegistrationDataOrqDto implements Serializable {
     private String id;
 
     @JsonProperty("idTipoAvisoInscripcion")
-    private Object idTipoAvisoInscripcion;
+    private Object noticeRegistrationTypeId;
 
     @JsonProperty("tipoConciliacion")
-    private Object tipoConciliacion;
+    private Object reconciliationType;
 
     @JsonProperty("numeroRegistro")
-    private Object numeroRegistro;
+    private Object registrationNumber;
 
     @JsonProperty("fechaRegistro")
-    private Object fechaRegistro;
+    private Object registrationDate;
 
     @JsonProperty("fechaVencimiento")
-    private Object fechaVencimiento;
+    private Object expirationDate;
 
     @JsonProperty("fechaLevantamientoEmbargo")
-    private Object fechaLevantamientoEmbargo;
+    private Object seizureReleaseDate;
 
     @JsonProperty("comentarios")
-    private Object comentarios;
+    private Object comments;
 
     @JsonProperty("moneda")
-    private Object moneda;
+    private Object currency;
 
     @JsonProperty("monto")
-    private Object monto;
+    private Object amount;
 
     @JsonProperty("sucursalLey")
-    private Object sucursalLey;
+    private Object branchLaw;
 
     @JsonProperty("otro")
-    private Object otro;
+    private Object other;
 
     @JsonProperty("tipoDeGarantiaMobiliario")
-    private Object tipoDeGarantiaMobiliario;
+    private Object movableGuaranteeType;
 
     @JsonProperty("idUsuario")
-    private Object idUsuario;
+    private Object userId;
 
     @JsonProperty("idOrganizacion")
-    private Object idOrganizacion;
+    private Object organizationId;
 
     @JsonProperty("idSucusal")
-    private Object idSucusal;
+    private Object branchId;
 
     @JsonProperty("idEstado")
-    private Object idEstado;
+    private Object statusId;
 
     @JsonProperty("idTipoEmbargo")
-    private Object idTipoEmbargo;
+    private Object seizureTypeId;
 
     @JsonProperty("motivoLevantamientoEmbargo")
-    private Object motivoLevantamientoEmbargo;
+    private Object seizureReleaseReason;
 
     @JsonProperty("descripcionEstatus")
-    private Object descripcionEstatus;
+    private Object statusDescription;
 
     @JsonProperty("estadoEmbargoNoDispAdmjud")
-    private Object estadoEmbargoNoDispAdmjud;
+    private Object seizureStateNotAvailableAdminJud;
 
     @JsonProperty("ejecucionDescripcionObligaciongarantizada")
-    private Object ejecucionDescripcionObligaciongarantizada;
+    private Object executionGuaranteedObligationDescription;
 
     @JsonProperty("ejecucionDescripcionIncumplimientoDeudor")
-    private Object ejecucionDescripcionIncumplimientoDeudor;
+    private Object executionDebtorDefaultDescription;
 
     @JsonProperty("ejecucionDescripcionPruebaIncumplimiento")
-    private Object ejecucionDescripcionPruebaIncumplimiento;
+    private Object executionDefaultEvidenceDescription;
 
     @JsonProperty("ejecucionDescripcionMontoSaldo")
-    private Object ejecucionDescripcionMontoSaldo;
+    private Object executionBalanceAmountDescription;
 
     @JsonProperty("ejecucionDescripcionMontofijado")
-    private Object ejecucionDescripcionMontofijado;
+    private Object executionFixedAmountDescription;
 
     @JsonProperty("ejecucionCostaProcesales")
-    private Object ejecucionCostaProcesales;
+    private Object executionLegalCosts;
 
     @JsonProperty("numeroSentenciaPrivilegio")
-    private Object numeroSentenciaPrivilegio;
+    private Object privilegeSentenceNumber;
 
     @JsonProperty("tipoAvisosInscripcion")
-    private Object tipoAvisosInscripcion;
+    private Object noticeRegistrationType;
 
     @JsonProperty("idSucusalNavigation")
-    private Object idSucusalNavigation;
+    private Object branchNavigation;
 
     @JsonProperty("idUsuarioNavigation")
-    private Object idUsuarioNavigation;
+    private Object userNavigation;
 
     @JsonProperty("idOrganizacionNavigation")
-    private Object idOrganizacionNavigation;
+    private Object organizationNavigation;
 
     @JsonProperty("acreedores")
-    private Object acreedores;
+    private Object creditors;
 
     @JsonProperty("bienes")
-    private Object bienes;
+    private Object assets;
 
     public CompleteRegistrationDataOrqDto() {
-        // Constructor vacío
     }
 
     public static CompleteRegistrationDataOrqDto fromId(String id) {
         CompleteRegistrationDataOrqDto dto = new CompleteRegistrationDataOrqDto();
         dto.id = id;
         
-        // Inicializar todos los campos como objetos vacíos
         Object empty = Collections.emptyMap();
-        dto.idTipoAvisoInscripcion = empty;
-        dto.tipoConciliacion = empty;
-        dto.numeroRegistro = empty;
-        dto.fechaRegistro = empty;
-        dto.fechaVencimiento = empty;
-        dto.fechaLevantamientoEmbargo = empty;
-        dto.comentarios = empty;
-        dto.moneda = empty;
-        dto.monto = empty;
-        dto.sucursalLey = empty;
-        dto.otro = empty;
-        dto.tipoDeGarantiaMobiliario = empty;
-        dto.idUsuario = empty;
-        dto.idOrganizacion = empty;
-        dto.idSucusal = empty;
-        dto.idEstado = empty;
-        dto.idTipoEmbargo = empty;
-        dto.motivoLevantamientoEmbargo = empty;
-        dto.descripcionEstatus = empty;
-        dto.estadoEmbargoNoDispAdmjud = empty;
-        dto.ejecucionDescripcionObligaciongarantizada = empty;
-        dto.ejecucionDescripcionIncumplimientoDeudor = empty;
-        dto.ejecucionDescripcionPruebaIncumplimiento = empty;
-        dto.ejecucionDescripcionMontoSaldo = empty;
-        dto.ejecucionDescripcionMontofijado = empty;
-        dto.ejecucionCostaProcesales = empty;
-        dto.numeroSentenciaPrivilegio = empty;
-        dto.tipoAvisosInscripcion = empty;
-        dto.idSucusalNavigation = empty;
-        dto.idUsuarioNavigation = empty;
-        dto.idOrganizacionNavigation = empty;
-        dto.acreedores = empty;
-        dto.bienes = empty;
+        dto.noticeRegistrationTypeId = empty;
+        dto.reconciliationType = empty;
+        dto.registrationNumber = empty;
+        dto.registrationDate = empty;
+        dto.expirationDate = empty;
+        dto.seizureReleaseDate = empty;
+        dto.comments = empty;
+        dto.currency = empty;
+        dto.amount = empty;
+        dto.branchLaw = empty;
+        dto.other = empty;
+        dto.movableGuaranteeType = empty;
+        dto.userId = empty;
+        dto.organizationId = empty;
+        dto.branchId = empty;
+        dto.statusId = empty;
+        dto.seizureTypeId = empty;
+        dto.seizureReleaseReason = empty;
+        dto.statusDescription = empty;
+        dto.seizureStateNotAvailableAdminJud = empty;
+        dto.executionGuaranteedObligationDescription = empty;
+        dto.executionDebtorDefaultDescription = empty;
+        dto.executionDefaultEvidenceDescription = empty;
+        dto.executionBalanceAmountDescription = empty;
+        dto.executionFixedAmountDescription = empty;
+        dto.executionLegalCosts = empty;
+        dto.privilegeSentenceNumber = empty;
+        dto.noticeRegistrationType = empty;
+        dto.branchNavigation = empty;
+        dto.userNavigation = empty;
+        dto.organizationNavigation = empty;
+        dto.creditors = empty;
+        dto.assets = empty;
         
         return dto;
     }
 
     // Getters
     public String getId() { return id; }
-    public Object getIdTipoAvisoInscripcion() { return idTipoAvisoInscripcion; }
-    public Object getTipoConciliacion() { return tipoConciliacion; }
-    public Object getNumeroRegistro() { return numeroRegistro; }
-    public Object getFechaRegistro() { return fechaRegistro; }
-    public Object getFechaVencimiento() { return fechaVencimiento; }
-    public Object getFechaLevantamientoEmbargo() { return fechaLevantamientoEmbargo; }
-    public Object getComentarios() { return comentarios; }
-    public Object getMoneda() { return moneda; }
-    public Object getMonto() { return monto; }
-    public Object getSucursalLey() { return sucursalLey; }
-    public Object getOtro() { return otro; }
-    public Object getTipoDeGarantiaMobiliario() { return tipoDeGarantiaMobiliario; }
-    public Object getIdUsuario() { return idUsuario; }
-    public Object getIdOrganizacion() { return idOrganizacion; }
-    public Object getIdSucusal() { return idSucusal; }
-    public Object getIdEstado() { return idEstado; }
-    public Object getIdTipoEmbargo() { return idTipoEmbargo; }
-    public Object getMotivoLevantamientoEmbargo() { return motivoLevantamientoEmbargo; }
-    public Object getDescripcionEstatus() { return descripcionEstatus; }
-    public Object getEstadoEmbargoNoDispAdmjud() { return estadoEmbargoNoDispAdmjud; }
-    public Object getEjecucionDescripcionObligaciongarantizada() { return ejecucionDescripcionObligaciongarantizada; }
-    public Object getEjecucionDescripcionIncumplimientoDeudor() { return ejecucionDescripcionIncumplimientoDeudor; }
-    public Object getEjecucionDescripcionPruebaIncumplimiento() { return ejecucionDescripcionPruebaIncumplimiento; }
-    public Object getEjecucionDescripcionMontoSaldo() { return ejecucionDescripcionMontoSaldo; }
-    public Object getEjecucionDescripcionMontofijado() { return ejecucionDescripcionMontofijado; }
-    public Object getEjecucionCostaProcesales() { return ejecucionCostaProcesales; }
-    public Object getNumeroSentenciaPrivilegio() { return numeroSentenciaPrivilegio; }
-    public Object getTipoAvisosInscripcion() { return tipoAvisosInscripcion; }
-    public Object getIdSucusalNavigation() { return idSucusalNavigation; }
-    public Object getIdUsuarioNavigation() { return idUsuarioNavigation; }
-    public Object getIdOrganizacionNavigation() { return idOrganizacionNavigation; }
-    public Object getAcreedores() { return acreedores; }
-    public Object getBienes() { return bienes; }
+    public Object getNoticeRegistrationTypeId() { return noticeRegistrationTypeId; }
+    public Object getReconciliationType() { return reconciliationType; }
+    public Object getRegistrationNumber() { return registrationNumber; }
+    public Object getRegistrationDate() { return registrationDate; }
+    public Object getExpirationDate() { return expirationDate; }
+    public Object getSeizureReleaseDate() { return seizureReleaseDate; }
+    public Object getComments() { return comments; }
+    public Object getCurrency() { return currency; }
+    public Object getAmount() { return amount; }
+    public Object getBranchLaw() { return branchLaw; }
+    public Object getOther() { return other; }
+    public Object getMovableGuaranteeType() { return movableGuaranteeType; }
+    public Object getUserId() { return userId; }
+    public Object getOrganizationId() { return organizationId; }
+    public Object getBranchId() { return branchId; }
+    public Object getStatusId() { return statusId; }
+    public Object getSeizureTypeId() { return seizureTypeId; }
+    public Object getSeizureReleaseReason() { return seizureReleaseReason; }
+    public Object getStatusDescription() { return statusDescription; }
+    public Object getSeizureStateNotAvailableAdminJud() { return seizureStateNotAvailableAdminJud; }
+    public Object getExecutionGuaranteedObligationDescription() { return executionGuaranteedObligationDescription; }
+    public Object getExecutionDebtorDefaultDescription() { return executionDebtorDefaultDescription; }
+    public Object getExecutionDefaultEvidenceDescription() { return executionDefaultEvidenceDescription; }
+    public Object getExecutionBalanceAmountDescription() { return executionBalanceAmountDescription; }
+    public Object getExecutionFixedAmountDescription() { return executionFixedAmountDescription; }
+    public Object getExecutionLegalCosts() { return executionLegalCosts; }
+    public Object getPrivilegeSentenceNumber() { return privilegeSentenceNumber; }
+    public Object getNoticeRegistrationType() { return noticeRegistrationType; }
+    public Object getBranchNavigation() { return branchNavigation; }
+    public Object getUserNavigation() { return userNavigation; }
+    public Object getOrganizationNavigation() { return organizationNavigation; }
+    public Object getCreditors() { return creditors; }
+    public Object getAssets() { return assets; }
 }

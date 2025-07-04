@@ -11,7 +11,7 @@ import java.util.Date;
  * DTO que representa la información de un acreedor en el sistema MICM.
  * Contiene datos de identificación, contacto y fechas relevantes.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

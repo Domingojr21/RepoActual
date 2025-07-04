@@ -20,8 +20,8 @@ import org.slf4j.LoggerFactory;
  * - body.security.token.succeed: true para autenticación exitosa
  * - body.security.token.number: Token JWT a extraer
  *
- * Autor: Roberto Kepp rkepp@banreservas.com
- * Fecha: 10/06/2025
+ * Autor: Domingo Ruiz c-djruiz@banreservas.com
+ * Fecha: 2025-06-10
  * Versión: 1.0
  */
 @ApplicationScoped

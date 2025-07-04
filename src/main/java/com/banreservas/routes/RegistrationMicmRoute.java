@@ -3,6 +3,9 @@ package com.banreservas.routes;
 import com.banreservas.processors.GenerateRegistrationMicmRequestProcessor;
 import com.banreservas.processors.ErrorResponseProcessor;
 import com.banreservas.util.Constants;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
@@ -98,53 +101,30 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     })
                 
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(400))
-                    .log(LoggingLevel.WARN, logger, "Request inválido para servicio registro - HTTP 400")
-                    .process(exchange -> {
-                        String responseBody = exchange.getIn().getBody(String.class);
-                        String errorMessage = "Validacion de request ha fallado";
-                        
-                        // Log temporal para debugging
-                        logger.error("=== RESPUESTA COMPLETA DEL SERVICIO LINEAL ===");
-                        logger.error("Response Body: {}", responseBody);
-                        logger.error("===============================================");
-                        
-                        try {
-                            if (responseBody != null && !responseBody.trim().isEmpty()) {
-                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                                com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(responseBody);
-                                
-                                // Intentar múltiples posibles ubicaciones del mensaje
-                                String headerMessage = jsonNode.path("header").path("responseMessage").asText();
-                                String bodyMessage = jsonNode.path("body").path("message").asText();
-                                String directMessage = jsonNode.path("message").asText();
-                                String responseMessage = jsonNode.path("responseMessage").asText();
-                                
-                                logger.error("Header message: {}", headerMessage);
-                                logger.error("Body message: {}", bodyMessage);
-                                logger.error("Direct message: {}", directMessage);
-                                logger.error("Response message: {}", responseMessage);
-                                
-                                if (!headerMessage.isEmpty()) {
-                                    errorMessage = headerMessage;
-                                } else if (!bodyMessage.isEmpty()) {
-                                    errorMessage = bodyMessage;
-                                } else if (!directMessage.isEmpty()) {
-                                    errorMessage = directMessage;
-                                } else if (!responseMessage.isEmpty()) {
-                                    errorMessage = responseMessage;
-                                }
-                            }
-                        } catch (Exception e) {
-                            logger.error("Error parseando mensaje de error del servicio: {}", e.getMessage(), e);
-                        }
-                        
-                        logger.error("Mensaje final extraído: {}", errorMessage);
-                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
-                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
-                    })
-                    .process(errorResponseProcessor)
-                    .marshal().json(JsonLibrary.Jackson)
-                    .stop()
+    .log(LoggingLevel.WARN, logger, "Request inválido para servicio registro - HTTP 400")
+    .process(exchange -> {
+        String errorMessage = "Validacion de request ha fallado";
+        
+        try {
+            String responseBody = exchange.getIn().getBody(String.class);
+            if (responseBody != null && responseBody.contains("responseMessage")) {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonNode = mapper.readTree(responseBody);
+                String extractedMessage = jsonNode.path("header").path("responseMessage").asText();
+                if (!extractedMessage.isEmpty()) {
+                    errorMessage = extractedMessage;
+                }
+            }
+        } catch (Exception e) {
+            logger.warn("Error parseando mensaje de error: {}", e.getMessage());
+        }
+        
+        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
+        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+    })
+    .process(errorResponseProcessor)
+    .marshal().json(JsonLibrary.Jackson)
+    .stop()
                 
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(401))
                     .log(LoggingLevel.WARN, logger, "Token inválido para servicio registro - HTTP 401")

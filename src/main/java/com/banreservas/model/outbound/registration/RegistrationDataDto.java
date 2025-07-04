@@ -10,7 +10,7 @@ import java.util.Date;
  * DTO que contiene toda la información detallada del registro de inscripción.
  * Incluye IDs, fechas, montos, estados y referencias a entidades relacionadas.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */
@@ -20,105 +20,105 @@ public record RegistrationDataDto(
         Integer id,
 
         @JsonProperty("idTipoAvisoInscripcion")
-        Integer idTipoAvisoInscripcion,
+        Integer noticeRegistrationTypeId,
 
         @JsonProperty("tipoConciliacion")
-        Integer tipoConciliacion,
+        Integer reconciliationType,
 
         @JsonProperty("numeroRegistro")
-        String numeroRegistro,
+        String registrationNumber,
 
         @JsonProperty("fechaRegistro")
-        Date fechaRegistro,
+        Date registrationDate,
 
         @JsonProperty("fechaVencimiento")
-        Date fechaVencimiento,
+        Date expirationDate,
 
         @JsonProperty("fechaLevantamientoEmbargo")
-        Date fechaLevantamientoEmbargo,
+        Date seizureReleaseDate,
 
         @JsonProperty("comentarios")
-        String comentarios,
+        String comments,
 
         @JsonProperty("moneda")
-        String moneda,
+        String currency,
 
         @JsonProperty("monto")
-        Integer monto,
+        Integer amount,
 
         @JsonProperty("sucursalLey")
-        String sucursalLey,
+        String branchLaw,
 
         @JsonProperty("otro")
-        String otro,
+        String other,
 
         @JsonProperty("tipoDeGarantiaMobiliario")
-        Integer tipoDeGarantiaMobiliario,
+        Integer movableGuaranteeType,
 
         @JsonProperty("idUsuario")
-        Integer idUsuario,
+        Integer userId,
 
         @JsonProperty("idOrganizacion")
-        Integer idOrganizacion,
+        Integer organizationId,
 
         @JsonProperty("idSucursal")
-        Integer idSucursal,
+        Integer branchId,
 
         @JsonProperty("idEstado")
-        Integer idEstado,
+        Integer statusId,
 
         @JsonProperty("idTipoEmbargo")
-        Integer idTipoEmbargo,
+        Integer seizureTypeId,
 
         @JsonProperty("motivoLevantamientoEmbargo")
-        String motivoLevantamientoEmbargo,
+        String seizureReleaseReason,
 
         @JsonProperty("descripcionEstatus")
-        String descripcionEstatus,
+        String statusDescription,
 
         @JsonProperty("estadoEmbargoNoDispAdmjud")
-        String estadoEmbargoNoDispAdmjud,
+        String seizureStateNotAvailableAdminJud,
 
         @JsonProperty("ejecucionDescripcionObligacionGarantizada")
-        String ejecucionDescripcionObligacionGarantizada,
+        String executionGuaranteedObligationDescription,
 
         @JsonProperty("ejecucionDescripcionIncumplimientoDeudor")
-        String ejecucionDescripcionIncumplimientoDeudor,
+        String executionDebtorDefaultDescription,
 
         @JsonProperty("ejecucionDescripcionPruebaIncumplimiento")
-        String ejecucionDescripcionPruebaIncumplimiento,
+        String executionDefaultEvidenceDescription,
 
         @JsonProperty("ejecucionDescripcionMontoSaldo")
-        Integer ejecucionDescripcionMontoSaldo,
+        Integer executionBalanceAmountDescription,
 
         @JsonProperty("ejecucionDescripcionMontofijado")
-        Integer ejecucionDescripcionMontofijado,
+        Integer executionFixedAmountDescription,
 
         @JsonProperty("ejecucionCostaProcesales")
-        Integer ejecucionCostaProcesales,
+        Integer executionLegalCosts,
 
         @JsonProperty("numeroSentenciaPrivilegio")
-        String numeroSentenciaPrivilegio,
+        String privilegeSentenceNumber,
 
         @JsonProperty("tipoAvisosInscripcion")
-        String tipoAvisosInscripcion,
+        String noticeRegistrationType,
 
         @JsonProperty("idSucursalNavigation")
-        Object idSucursalNavigation,
+        Object branchNavigation,
 
         @JsonProperty("idUsuarioNavigation")
-        Object idUsuarioNavigation,
+        Object userNavigation,
 
         @JsonProperty("idOrganizacionNavigation")
-        Object idOrganizacionNavigation,
+        Object organizationNavigation,
 
         @JsonProperty("acreedores")
-        Object acreedores,
+        Object creditors,
 
         @JsonProperty("bienes")
-        Object bienes,
+        Object assets,
 
         @JsonProperty("deudores")
-        Object deudores
+        Object debtors
 ) implements Serializable {
 }

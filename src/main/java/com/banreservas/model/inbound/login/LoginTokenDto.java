@@ -19,7 +19,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param succeed Indica si la generación del token fue exitosa
  * @param message Mensaje descriptivo sobre el estado del token
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

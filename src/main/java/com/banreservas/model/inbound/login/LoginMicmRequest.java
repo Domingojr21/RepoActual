@@ -15,7 +15,7 @@ import java.io.Serializable;
  * @param email Email del usuario para autenticación
  * @param password Contraseña del usuario
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

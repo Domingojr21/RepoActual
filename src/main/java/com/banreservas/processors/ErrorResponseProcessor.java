@@ -6,7 +6,6 @@ import com.banreservas.util.Constants;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.Collections;
-import java.util.Map;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -17,16 +16,14 @@ import org.slf4j.LoggerFactory;
  * Processor que maneja las respuestas de error del sistema de registro MICM.
  * Genera respuestas estructuradas cuando ocurren errores durante el procesamiento.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
- * @since 2025-07-01
+ * @since 2025-07-02
  */
  @ApplicationScoped
 public class ErrorResponseProcessor implements Processor {
 
     private static final Logger logger = LoggerFactory.getLogger(ErrorResponseProcessor.class);
-    
-    private static final String REGISTRATION_TYPE = "registration";
 
     @Override
     public void process(Exchange exchange) throws Exception {

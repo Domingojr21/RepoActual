@@ -130,7 +130,7 @@ curl --location --request PUT 'http://localhost:8080/change/status/operation/mic
 --data '{
     "id": 78904,
     "status": 2,
-    "descripcionEstatus": "string"
+    "descripcionEstatus": ""
 }'
 ```
 
@@ -149,14 +149,14 @@ curl --location --request PUT 'http://localhost:8080/change/status/operation/mic
 --data '{
     "id": 403528,
     "status": 3,
-    "estadoEmbargoNoDispAdmjud": "string",
+    "estadoEmbargoNoDispAdmjud": "",
     "idTipoEmbargo": 1,
     "ejecucionDescripcionMontofijado": 0,
     "ejecucionDescripcionMontoSaldo": 0,
     "ejecucionCostaProcesales": 0,
-    "ejecucionDescripcionObligaciongarantizada": "string",
-    "ejecucionDescripcionIncumplimientoDeudor": "string",
-    "descripcionEstatus": "string"
+    "ejecucionDescripcionObligaciongarantizada": "",
+    "ejecucionDescripcionIncumplimientoDeudor": "",
+    "descripcionEstatus": ""
 }'
 ```
 
@@ -201,7 +201,7 @@ curl --location --request PUT 'http://localhost:8080/change/status/operation/mic
    {
     "id": 78904,
     "status": 2,
-    "descripcionEstatus": "string"
+    "descripcionEstatus": ""
 }
 ```
 
@@ -209,14 +209,14 @@ curl --location --request PUT 'http://localhost:8080/change/status/operation/mic
   {
     "id": 403528,
     "status": 3,
-    "estadoEmbargoNoDispAdmjud": "string",
+    "estadoEmbargoNoDispAdmjud": "",
     "idTipoEmbargo": 1,
     "ejecucionDescripcionMontofijado": 0,
     "ejecucionDescripcionMontoSaldo": 0,
     "ejecucionCostaProcesales": 0,
-    "ejecucionDescripcionObligaciongarantizada": "string",
-    "ejecucionDescripcionIncumplimientoDeudor": "string",
-    "descripcionEstatus": "string"
+    "ejecucionDescripcionObligaciongarantizada": "",
+    "ejecucionDescripcionIncumplimientoDeudor": "",
+    "descripcionEstatus": ""
 }
 ```
 

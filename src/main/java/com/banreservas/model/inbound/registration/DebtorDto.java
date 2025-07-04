@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO que representa la información de un deudor en el sistema MICM.
  * Contiene datos de identificación, tipo, contacto y ubicación.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

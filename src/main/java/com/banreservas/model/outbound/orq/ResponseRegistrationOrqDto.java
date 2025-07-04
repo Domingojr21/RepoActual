@@ -9,7 +9,7 @@ import java.io.Serializable;
  * DTO para la respuesta del orquestador al cliente.
  * Versión simplificada que retorna solo los datos esenciales del registro.
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

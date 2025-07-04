@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @param responseCode Código numérico de respuesta (200 = exitoso)
  * @param responseMessage Mensaje descriptivo del resultado de la operación
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */

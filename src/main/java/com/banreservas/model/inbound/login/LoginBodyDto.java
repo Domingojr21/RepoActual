@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * 
  * @param security Objeto que contiene los datos de seguridad y token
  * 
- * @author Roberto Kepp
+ * @author Domingo Ruiz c-djruiz@banreservas.com
  * @version 1.0
  * @since 2025-07-01
  */
