@@ -16,34 +16,6 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
         wireMockServer = new WireMockServer(8089);
         wireMockServer.start();
 
-        // ============= LOGIN MICM =============
-        // Login exitoso general
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
-                .atPriority(5)
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                                "header": {
-                                    "responseCode": 200,
-                                    "responseMessage": "Exitoso"
-                                },
-                                "body": {
-                                    "security": {
-                                        "token": {
-                                            "number": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token",
-                                            "expiration": "2025-07-01T11:14:51.162+00:00",
-                                            "contractValidation": true,
-                                            "succeed": true,
-                                            "message": "Authenticate success"
-                                        }
-                                    }
-                                }
-                            }
-                            """)));
-
-        // Login fallido para casos específicos
         wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
                 .withHeader("sessionId", equalTo("invalid"))
                 .atPriority(1)
@@ -70,9 +42,8 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                             }
                             """)));
 
-        // ============= REGISTRO INSCRIPCION MICM =============
-        // Registro exitoso general
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
+        // Login exitoso general - Menor prioridad
+        wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
                 .atPriority(5)
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -84,48 +55,21 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                                     "responseMessage": "Exitoso"
                                 },
                                 "body": {
-                                    "data": {
-                                        "id": 404969,
-                                        "idTipoAvisoInscripcion": null,
-                                        "tipoConciliacion": null,
-                                        "numeroRegistro": null,
-                                        "fechaRegistro": null,
-                                        "fechaVencimiento": null,
-                                        "fechaLevantamientoEmbargo": null,
-                                        "comentarios": null,
-                                        "moneda": null,
-                                        "monto": null,
-                                        "sucursalLey": null,
-                                        "otro": null,
-                                        "tipoDeGarantiaMobiliario": null,
-                                        "idUsuario": null,
-                                        "idOrganizacion": null,
-                                        "idSucursal": null,
-                                        "idEstado": null,
-                                        "idTipoEmbargo": null,
-                                        "motivoLevantamientoEmbargo": null,
-                                        "descripcionEstatus": null,
-                                        "estadoEmbargoNoDispAdmjud": null,
-                                        "ejecucionDescripcionObligacionGarantizada": null,
-                                        "ejecucionDescripcionIncumplimientoDeudor": null,
-                                        "ejecucionDescripcionPruebaIncumplimiento": null,
-                                        "ejecucionDescripcionMontoSaldo": null,
-                                        "ejecucionDescripcionMontofijado": null,
-                                        "ejecucionCostaProcesales": null,
-                                        "numeroSentenciaPrivilegio": null,
-                                        "tipoAvisosInscripcion": null,
-                                        "idSucursalNavigation": null,
-                                        "idUsuarioNavigation": null,
-                                        "idOrganizacionNavigation": null,
-                                        "acreedores": null,
-                                        "bienes": null,
-                                        "deudores": null
+                                    "security": {
+                                        "token": {
+                                            "number": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token",
+                                            "expiration": "2025-07-01T11:14:51.162+00:00",
+                                            "contractValidation": true,
+                                            "succeed": true,
+                                            "message": "Authenticate success"
+                                        }
                                     }
                                 }
                             }
                             """)));
 
-        // Registro con token inválido
+        // ============= REGISTRO INSCRIPCION MICM =============
+        // Registro con token inválido - Mayor prioridad
         wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
                 .withHeader("sessionid", equalTo("invalid-token"))
                 .atPriority(1)
@@ -144,7 +88,7 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                             }
                             """)));
 
-        // Registro con error del servidor
+        // Registro con error del servidor - Mayor prioridad  
         wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
                 .withHeader("sessionid", equalTo("server-error"))
                 .atPriority(1)
@@ -163,7 +107,7 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                             }
                             """)));
 
-        // Registro con datos inválidos
+        // Registro con datos inválidos - Mayor prioridad
         wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
                 .withRequestBody(containing("\"invalidField\""))
                 .atPriority(1)
@@ -178,6 +122,60 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                                 },
                                 "body": {
                                     "data": null
+                                }
+                            }
+                            """)));
+
+        // Registro exitoso general - Menor prioridad
+        wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
+                .atPriority(5)
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                            {
+                                "header": {
+                                    "responseCode": 200,
+                                    "responseMessage": "Exitoso"
+                                },
+                                "body": {
+                                    "data": {
+                                        "id": 404969,
+                                        "idTipoAvisoInscripcion": {},
+                                        "tipoConciliacion": {},
+                                        "numeroRegistro": {},
+                                        "fechaRegistro": {},
+                                        "fechaVencimiento": {},
+                                        "fechaLevantamientoEmbargo": {},
+                                        "comentarios": {},
+                                        "moneda": {},
+                                        "monto": {},
+                                        "sucursalLey": {},
+                                        "otro": {},
+                                        "tipoDeGarantiaMobiliario": {},
+                                        "idUsuario": {},
+                                        "idOrganizacion": {},
+                                        "idSucursal": {},
+                                        "idEstado": {},
+                                        "idTipoEmbargo": {},
+                                        "motivoLevantamientoEmbargo": {},
+                                        "descripcionEstatus": {},
+                                        "estadoEmbargoNoDispAdmjud": {},
+                                        "ejecucionDescripcionObligacionGarantizada": {},
+                                        "ejecucionDescripcionIncumplimientoDeudor": {},
+                                        "ejecucionDescripcionPruebaIncumplimiento": {},
+                                        "ejecucionDescripcionMontoSaldo": {},
+                                        "ejecucionDescripcionMontofijado": {},
+                                        "ejecucionCostaProcesales": {},
+                                        "numeroSentenciaPrivilegio": {},
+                                        "tipoAvisosInscripcion": {},
+                                        "idSucursalNavigation": {},
+                                        "idUsuarioNavigation": {},
+                                        "idOrganizacionNavigation": {},
+                                        "acreedores": {},
+                                        "bienes": {},
+                                        "deudores": {}
+                                    }
                                 }
                             }
                             """)));

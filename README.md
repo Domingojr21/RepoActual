@@ -1,6 +1,5 @@
-# ms-orq-cambia-estado-operacion-micm
-
-Este proyecto es un microservicio Json funcionando como orquestador encargado de consumir el servicio **CAMBIAESTADOOPERACIONMICM** y **LOGINMICM** de legado.
+# ms-orq-master-registro-inscripcion-micm
+Este proyecto es un microservicio Json funcionando como orquestador encargado de consumir el servicio **MASTERREGISTROINSCRIPCIONMICM** y **LOGINMICM** de legado.
 
 Si quieres aprender más de Quarkus, por favor visita el [sitio web oficial](https://quarkus.io/).
 
@@ -57,7 +56,7 @@ O, si no tienes GraalVM instalado, puedes construir el ejecutable nativo en un c
 Luego, puedes ejecutar tu ejecutable nativo con:
 
 ```shell script
-./target/ms-orq-cambia-estado-operacion-micm-1.0.0-SNAPSHOT-runner
+./target/ms-orq-master-registro-inscripcion-micm-1.0.0-SNAPSHOT-runner
 ```
 
 Para obtener más información sobre cómo construir ejecutables nativos, consulta https://quarkus.io/guides/maven-tooling.
@@ -74,15 +73,15 @@ Para obtener más información sobre cómo construir ejecutables nativos, consul
 
 ## Endpoints
 
-**POST:** /change/status/operation/micm/api/v1/ChangeStatusOperation
+**POST:** registration/micm/api/v1/registrationInscription
 
-**Descripción:** Este endpoint permite obtener la información de clientes banreservas.
+**Descripción:** Este endpoint permite registrar los registros de embargos y garantías.
 
-**GET:** /change/status/operation/micm/api/v1/health
+**GET:** /registration/micm/api/v1/health
 
 **Descripción:** Monitorea la salud de tu aplicación utilizando SmallRye Health.
 
-**GET:** /change/status/operation/micm/api/v1/swagger-ui
+**GET:** /registration/micm/api/v1/swagger-ui
 
 **Descripción:** Para acceder a Swagger UI y ver la documentación de las apis.
 
@@ -101,7 +100,7 @@ El servicio invoca dos servicio REST llamado ms-log-in-micm y ms-cambia-estado-o
 
 ##### Variables de Entorno/Secrets
 
-La integración con el servicio REST ms-orq-cambia-estado-operacion-micm requiere la siguiente configuración para consumo:
+La integración con el servicio REST ms-orq-master-registro-inscripcion-micm requiere la siguiente configuración para consumo:
 
 ```properties
 micm.login.url=https://ms-login-micm-dev.apps.az-aro-dev.banreservas.com/api/v1/login-micm
@@ -109,78 +108,98 @@ micm.login.email=ilozada@banreservas.com
 micm.login.password=Inicio.01
 micm.login.timeout=30000
 
-micm.change.operation.status.url=https://ms-cambia-estado-operacion-dev.apps.az-aro-dev.banreservas.com/api/v1/cambia-estado-operacion
-micm.change.operation.status.timeout=1500
+micm.registration.url=https://ms-master-registro-inscripcion-dev.apps.az-aro-dev.banreservas.com/api/v1/master-registro-inscripcion
+micm.registration.timeout=30000
 ```
 
 ### Ejemplo de Solicitud (Request):
 
-```curl Cancelación
-curl --location --request PUT 'http://localhost:8080/change/status/operation/micm/api/v1/ChangeStatusOperation' \
---header 'Content-Type: application/json' \
---header 'sessionId: 123' \
---header 'Version: 1' \
---header 'Servicio: CambiaEstadoOperacionMICM' \
---header 'FechaHora: 2022-11-02T09:59:49.518472-04:00' \
---header 'Terminal: 0.0.0.0' \
---header 'Usuario: Prueba' \
+```curl 
+curl --location 'http://localhost:8080/registration/micm/api/v1/registrationInscription' \
 --header 'Canal: MICM' \
+--header 'Usuario: Prueba' \
+--header 'Terminal: 0.0.0.0' \
+--header 'FechaHora: 2022-11-02T09:59:49.518472-04:00' \
+--header 'Version: 1' \
+--header 'Servicio: MasterRegistroInscripcionMICM' \
+--header 'Content-Type: application/json' \
+--header 'sessionId: 1' \
 --header 'Authorization: Bearer eyJ' \
---header 'Cookie: 846a2fbdbcf444064ba9a2e854131af7=8e7111252b675297b7289520ec5c2d3b; 9736b9f74f30f14c9d506a655fea2fac=46fbb85d3974795fa60cedff14efd07e' \
+--header 'Cookie: 846a2fbdbcf444064ba9a2e854131af7=8e7111252b675297b7289520ec5c2d3b; bb9ed58263852ac4800210bffe579347=35f8e8cea5d4d687b2a08b7c6fec070e' \
 --data '{
-    "id": 78904,
-    "status": 2,
-    "descripcionEstatus": ""
-}'
-```
-
-```curl Embargos
-curl --location --request PUT 'http://localhost:8080/change/status/operation/micm/api/v1/ChangeStatusOperation' \
---header 'Content-Type: application/json' \
---header 'sessionId: 123' \
---header 'Version: 1' \
---header 'Servicio: CambiaEstadoOperacionMICM' \
---header 'FechaHora: 2022-11-02T09:59:49.518472-04:00' \
---header 'Terminal: 0.0.0.0' \
---header 'Usuario: Prueba' \
---header 'Canal: MICM' \
---header 'Authorization: Bearer EYJ' \
---header 'Cookie: 846a2fbdbcf444064ba9a2e854131af7=8e7111252b675297b7289520ec5c2d3b; 9736b9f74f30f14c9d506a655fea2fac=46fbb85d3974795fa60cedff14efd07e; 846a2fbdbcf444064ba9a2e854131af7=8e7111252b675297b7289520ec5c2d3b; 9736b9f74f30f14c9d506a655fea2fac=46fbb85d3974795fa60cedff14efd07e' \
---data '{
-    "id": 403528,
-    "status": 3,
-    "estadoEmbargoNoDispAdmjud": "",
-    "idTipoEmbargo": 1,
-    "ejecucionDescripcionMontofijado": 0,
-    "ejecucionDescripcionMontoSaldo": 0,
-    "ejecucionCostaProcesales": 0,
-    "ejecucionDescripcionObligaciongarantizada": "",
-    "ejecucionDescripcionIncumplimientoDeudor": "",
-    "descripcionEstatus": ""
-}'
-```
-
-```curl Ejecución
-curl --location --request PUT 'http://localhost:8080/change/status/operation/micm/api/v1/ChangeStatusOperation' \
---header 'Content-Type: application/json' \
---header 'sessionId: 123' \
---header 'Version: 1' \
---header 'Servicio: CambiaEstadoOperacionMICM' \
---header 'FechaHora: 2022-11-02T09:59:49.518472-04:00' \
---header 'Terminal: 0.0.0.0' \
---header 'Usuario: Prueba' \
---header 'Canal: MICM' \
---header 'Authorization: Bearer EYJ' \
---header 'Cookie: 846a2fbdbcf444064ba9a2e854131af7=8e7111252b675297b7289520ec5c2d3b; 9736b9f74f30f14c9d506a655fea2fac=46fbb85d3974795fa60cedff14efd07e' \
---data '{
-    "id": 403528,
-    "status": 4,
-    "tipoConciliacion": 1,
-    "ejecucionDescripcionMontofijado": 0,
-    "ejecucionDescripcionMontoSaldo": 0,
-    "ejecucionCostaProcesales": 0,
-    "ejecucionDescripcionObligaciongarantizada": "test1",
-    "ejecucionDescripcionIncumplimientoDeudor": "0"
+    "operaciones": {
+        "idTipoAvisoInscripcion": 0,
+        "tipoConciliacion": 1,
+        "fechaVencimiento": "2023-03-27T05:44:37.843Z",
+        "comentarios": "string",
+        "moneda": "string",
+        "monto": 0,
+        "tipoDeGarantiaMobiliario": 1
+    },
+    "acreedores": [
+        {
+            "rncCedula": "string",
+            "nombreAcreedor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        },
+        {
+            "rncCedula": "456343524",
+            "nombreAcreedor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        }
+    ],
+    "deudores": [
+        {
+            "rncCedula": "456343523",
+            "IdTipoDeudor": "1",
+            "nombreDeudor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        },
+        {
+            "rncCedula": "456343524",
+            "IdTipoDeudor": "1",
+            "nombreDeudor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        }
+    ],
+    "bienes": [
+        {
+            "idTipoPropiedad": 1,
+            "idTipoBien": 1,
+            "numeroSerial": "456343523",
+            "descripcionBien": "string",
+            "incorporacionInmueble": true,
+            "incorporacionInmuebleDescripcion": "string",
+            "registroDondeSeEnCuentraInscrito": "string",
+            "ubicacionDelInmueble": "string"
+        },
+        {
+            "idTipoPropiedad": 1,
+            "idTipoBien": 1,
+            "numeroSerial": "456343524",
+            "descripcionBien": "string",
+            "incorporacionInmueble": true,
+            "incorporacionInmuebleDescripcion": "string",
+            "registroDondeSeEnCuentraInscrito": "string",
+            "ubicacionDelInmueble": "string"
+        }
+    ]
 }'
 ```
 
@@ -197,39 +216,81 @@ curl --location --request PUT 'http://localhost:8080/change/status/operation/mic
 
 ## Cuerpo de la Solicitud (Request Body)
 
-```json Cancelación
-   {
-    "id": 78904,
-    "status": 2,
-    "descripcionEstatus": ""
-}
-```
-
-```json Embargos
-  {
-    "id": 403528,
-    "status": 3,
-    "estadoEmbargoNoDispAdmjud": "",
-    "idTipoEmbargo": 1,
-    "ejecucionDescripcionMontofijado": 0,
-    "ejecucionDescripcionMontoSaldo": 0,
-    "ejecucionCostaProcesales": 0,
-    "ejecucionDescripcionObligaciongarantizada": "",
-    "ejecucionDescripcionIncumplimientoDeudor": "",
-    "descripcionEstatus": ""
-}
-```
-
-```json Ejecución
- {
-    "id": 403528,
-    "status": 4,
-    "tipoConciliacion": 1,
-    "ejecucionDescripcionMontofijado": 0,
-    "ejecucionDescripcionMontoSaldo": 0,
-    "ejecucionCostaProcesales": 0,
-    "ejecucionDescripcionObligaciongarantizada": "test1",
-    "ejecucionDescripcionIncumplimientoDeudor": "0"
+```json 
+{
+    "operaciones": {
+        "idTipoAvisoInscripcion": 0,
+        "tipoConciliacion": 1,
+        "fechaVencimiento": "2023-03-27T05:44:37.843Z",
+        "comentarios": "string",
+        "moneda": "string",
+        "monto": 0,
+        "tipoDeGarantiaMobiliario": 1
+    },
+    "acreedores": [
+        {
+            "rncCedula": "string",
+            "nombreAcreedor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        },
+        {
+            "rncCedula": "456343524",
+            "nombreAcreedor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        }
+    ],
+    "deudores": [
+        {
+            "rncCedula": "456343523",
+            "IdTipoDeudor": "1",
+            "nombreDeudor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        },
+        {
+            "rncCedula": "456343524",
+            "IdTipoDeudor": "1",
+            "nombreDeudor": "string",
+            "idMunicipio": "string",
+            "domicilio": "string",
+            "correoElectronico": "string",
+            "telefono": "string",
+            "nacional": true
+        }
+    ],
+    "bienes": [
+        {
+            "idTipoPropiedad": 1,
+            "idTipoBien": 1,
+            "numeroSerial": "456343523",
+            "descripcionBien": "string",
+            "incorporacionInmueble": true,
+            "incorporacionInmuebleDescripcion": "string",
+            "registroDondeSeEnCuentraInscrito": "string",
+            "ubicacionDelInmueble": "string"
+        },
+        {
+            "idTipoPropiedad": 1,
+            "idTipoBien": 1,
+            "numeroSerial": "456343524",
+            "descripcionBien": "string",
+            "incorporacionInmueble": true,
+            "incorporacionInmuebleDescripcion": "string",
+            "registroDondeSeEnCuentraInscrito": "string",
+            "ubicacionDelInmueble": "string"
+        }
+    ]
 }
 ```
 
@@ -237,17 +298,52 @@ curl --location --request PUT 'http://localhost:8080/change/status/operation/mic
 
 ##### Códigos de Respuesta
 
-La API de ms-orq-cambia-estado-operacion-micm utiliza varios códigos de respuesta para indicar el estado de la solicitud. A continuación se describen los códigos de respuesta específicos utilizados por la API:
+La API de ms-orq-master-registro-inscripcion-micm utiliza varios códigos de respuesta para indicar el estado de la solicitud. A continuación se describen los códigos de respuesta específicos utilizados por la API:
 
 - **Código de Respuesta:** 200
 - **Descripción:** Success.
 
 ```json
  {
-    "succeeded": "false",
-    "message": "Inscripcion Ejecutada",
+    "succeeded": "true",
+    "message": {},
     "errors": {},
-    "data": {}
+    "data": {
+        "id": "404972",
+        "idTipoAvisoInscripcion": {},
+        "tipoConciliacion": {},
+        "numeroRegistro": {},
+        "fechaRegistro": {},
+        "fechaVencimiento": {},
+        "fechaLevantamientoEmbargo": {},
+        "comentarios": {},
+        "moneda": {},
+        "monto": {},
+        "sucursalLey": {},
+        "otro": {},
+        "tipoDeGarantiaMobiliario": {},
+        "idUsuario": {},
+        "idOrganizacion": {},
+        "idSucusal": {},
+        "idEstado": {},
+        "idTipoEmbargo": {},
+        "motivoLevantamientoEmbargo": {},
+        "descripcionEstatus": {},
+        "estadoEmbargoNoDispAdmjud": {},
+        "ejecucionDescripcionObligaciongarantizada": {},
+        "ejecucionDescripcionIncumplimientoDeudor": {},
+        "ejecucionDescripcionPruebaIncumplimiento": {},
+        "ejecucionDescripcionMontoSaldo": {},
+        "ejecucionDescripcionMontofijado": {},
+        "ejecucionCostaProcesales": {},
+        "numeroSentenciaPrivilegio": {},
+        "tipoAvisosInscripcion": {},
+        "idSucusalNavigation": {},
+        "idUsuarioNavigation": {},
+        "idOrganizacionNavigation": {},
+        "acreedores": {},
+        "bienes": {}
+    }
 }
 ```
 
@@ -255,11 +351,11 @@ La API de ms-orq-cambia-estado-operacion-micm utiliza varios códigos de respues
 - **Descripción:** Bad Request, uno o más encabezados parametros están vacíos.
 
 ```json
-  {
+{
     "succeeded": "false",
-    "message": "ID es requerido y debe ser mayor a 0",
+    "message": "Se Produjo un Error de Validación - 'Rnc Cedula' must not be empty.",
     "errors": {},
-    "data": {}
+    "data": null
 }
 ```
 
@@ -267,11 +363,11 @@ La API de ms-orq-cambia-estado-operacion-micm utiliza varios códigos de respues
 - **Descripción:** Unauthorized, autenticación fallida.
 
 ```json
-  {
+ {
     "succeeded": "false",
     "message": "Credenciales inválidas o Token Expirado",
     "errors": {},
-    "data": {}
+    "data": null
 }
 ```
 
@@ -281,7 +377,7 @@ La API de ms-orq-cambia-estado-operacion-micm utiliza varios códigos de respues
 ```json
   {
     "succeeded": "false",
-    "message": "Error interno en servicio de cambio estado operacion",
+    "message": "Error en el procesamiento de registro de inscripción",
     "errors": {},
     "data": {}
 }
@@ -331,8 +427,7 @@ quarkus.smallrye-health.root-path=change/status/operation/micm/api/v1/health
 Para configurar de manera correcta la auditoría a nivel de logs requerimos:
 
 ```properties
-log.appender.applicationName=ms-orq-cambia-estado-operacion-micm
-log.appender.urlService=https://ms-audit-receiver-dev.apps.az-aro-dev.banreservas.com/audit/api/v1/auditReceiver
+log.appender.applicationName=ms-orq-master-registro-inscripcion-micmlog.appender.urlService=https://ms-audit-receiver-dev.apps.az-aro-dev.banreservas.com/audit/api/v1/auditReceiver
 log.appender.ofuscado=NumeroProducto[0:4]
 log.appender.queue=audit-queue
 ```
