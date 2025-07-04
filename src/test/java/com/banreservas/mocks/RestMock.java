@@ -16,189 +16,9 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
         wireMockServer = new WireMockServer(8089);
         wireMockServer.start();
 
-        // Stubs específicos primero (máxima prioridad)
-        stubSpecificSuccessfulLogin();
-        stubSpecificSuccessfulChangeStatus();
-        
-        // Stubs generales
-        stubSuccessfulLogin();
-        stubFailedLogin();
-        stubSuccessfulChangeStatus();
-        stubFailedChangeStatus();
-        
-        // Catch-all al final (mínima prioridad)
-        stubCatchAllStubs();
-
-        return Map.of(
-            "micm.login.url", "http://localhost:8089/api/v1/login-micm",
-            "micm.change.operation.status.url", "http://localhost:8089/api/v1/cambia-estado-operacion"
-        );
-    }
-
-    @Override
-    public void stop() {
-        if (wireMockServer != null) {
-            wireMockServer.stop();
-        }
-    }
-
-    private void stubSpecificSuccessfulLogin() {
-        // Stub específico para sessionId="123" (usado en testSuccessfulChangeStatusOperation)
+        // ============= LOGIN MICM =============
+        // Login exitoso general
         wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
-                .withHeader("sessionId", equalTo("123"))
-                .withHeader("Authorization", containing("Bearer"))
-                .atPriority(1)
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                                "header": {
-                                    "responseCode": 200,
-                                    "responseMessage": "Exitoso"
-                                },
-                                "body": {
-                                    "security": {
-                                        "token": {
-                                            "number": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token.123",
-                                            "expiration": "2025-07-01T11:14:51.162+00:00",
-                                            "contractValidation": true,
-                                            "succeed": true,
-                                            "message": "Authenticate success"
-                                        }
-                                    }
-                                }
-                            }
-                            """)));
-    }
-
-    private void stubSpecificSuccessfulChangeStatus() {
-        // Caso: Inscripcion Ejecutada (Status 4)
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/cambia-estado-operacion"))
-                .withRequestBody(containing("\"id\":403528"))
-                .withRequestBody(containing("\"status\":4"))
-                .atPriority(1)
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                                "Header": {
-                                    "ResponseCode": 200,
-                                    "ResponseMessage": "Exitoso"
-                                },
-                                "Body": {
-                                    "Operation": {
-                                        "id": 403528,
-                                        "status": 4,
-                                        "statusDescription": "Inscripcion Ejecutada",
-                                        "nonAvailableJudicialSeizureState": null,
-                                        "seizureTypeId": null,
-                                        "fixedAmountExecutionDescription": 0,
-                                        "balanceAmountExecutionDescription": 0,
-                                        "proceduralCostsExecution": 0,
-                                        "guaranteedObligationExecutionDescription": "test1",
-                                        "debtorNonComplianceExecutionDescription": "0",
-                                        "conciliationType": 1,
-                                        "seizureReleaseDate": null,
-                                        "seizureReleaseReason": null
-                                    },
-                                    "Succeeded": false,
-                                    "Message": "Inscripcion Ejecutada",
-                                    "Errors": null,
-                                    "Security": {
-                                        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token.123"
-                                    }
-                                }
-                            }
-                            """)));
-
-        // Caso: Inscripcion Embargada (Status 3)
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/cambia-estado-operacion"))
-                .withRequestBody(containing("\"id\":403528"))
-                .withRequestBody(containing("\"status\":3"))
-                .atPriority(1)
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                                "Header": {
-                                    "ResponseCode": 200,
-                                    "ResponseMessage": "Exitoso"
-                                },
-                                "Body": {
-                                    "Operation": {
-                                        "id": 403528,
-                                        "status": 3,
-                                        "statusDescription": "Inscripcion Embargada",
-                                        "nonAvailableJudicialSeizureState": "",
-                                        "seizureTypeId": 1,
-                                        "fixedAmountExecutionDescription": 0,
-                                        "balanceAmountExecutionDescription": 0,
-                                        "proceduralCostsExecution": 0,
-                                        "guaranteedObligationExecutionDescription": "",
-                                        "debtorNonComplianceExecutionDescription": "",
-                                        "conciliationType": null,
-                                        "seizureReleaseDate": null,
-                                        "seizureReleaseReason": null
-                                    },
-                                    "Succeeded": false,
-                                    "Message": "Inscripcion Embargada",
-                                    "Errors": null,
-                                    "Security": {
-                                        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token.123"
-                                    }
-                                }
-                            }
-                            """)));
-
-        // Caso: Inscripcion Cancelada (Status 2)
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/cambia-estado-operacion"))
-                .withRequestBody(containing("\"id\":78904"))
-                .withRequestBody(containing("\"status\":2"))
-                .atPriority(1)
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                                "Header": {
-                                    "ResponseCode": 200,
-                                    "ResponseMessage": "Exitoso"
-                                },
-                                "Body": {
-                                    "Operation": {
-                                        "id": 78904,
-                                        "status": 2,
-                                        "statusDescription": "Inscripcion Cancelada",
-                                        "nonAvailableJudicialSeizureState": null,
-                                        "seizureTypeId": null,
-                                        "fixedAmountExecutionDescription": null,
-                                        "balanceAmountExecutionDescription": null,
-                                        "proceduralCostsExecution": null,
-                                        "guaranteedObligationExecutionDescription": null,
-                                        "debtorNonComplianceExecutionDescription": null,
-                                        "conciliationType": null,
-                                        "seizureReleaseDate": null,
-                                        "seizureReleaseReason": null
-                                    },
-                                    "Succeeded": false,
-                                    "Message": "Inscripcion Cancelada",
-                                    "Errors": null,
-                                    "Security": {
-                                        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token.123"
-                                    }
-                                }
-                            }
-                            """)));
-    }
-
-    private void stubSuccessfulLogin() {
-        // Login exitoso para sessionId="123456"
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
-                .withHeader("sessionId", equalTo("123456"))
-                .withHeader("Authorization", containing("Bearer"))
                 .atPriority(5)
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -222,12 +42,11 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                                 }
                             }
                             """)));
-    }
 
-    private void stubFailedLogin() {
-        // Login fallido para sessionId="invalid" y "no-auth"
+        // Login fallido para casos específicos
         wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
                 .withHeader("sessionId", equalTo("invalid"))
+                .atPriority(1)
                 .willReturn(aResponse()
                         .withStatus(401)
                         .withHeader("Content-Type", "application/json")
@@ -251,8 +70,65 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                             }
                             """)));
 
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
-                .withHeader("sessionId", equalTo("no-auth"))
+        // ============= REGISTRO INSCRIPCION MICM =============
+        // Registro exitoso general
+        wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
+                .atPriority(5)
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody("""
+                            {
+                                "header": {
+                                    "responseCode": 200,
+                                    "responseMessage": "Exitoso"
+                                },
+                                "body": {
+                                    "data": {
+                                        "id": 404969,
+                                        "idTipoAvisoInscripcion": null,
+                                        "tipoConciliacion": null,
+                                        "numeroRegistro": null,
+                                        "fechaRegistro": null,
+                                        "fechaVencimiento": null,
+                                        "fechaLevantamientoEmbargo": null,
+                                        "comentarios": null,
+                                        "moneda": null,
+                                        "monto": null,
+                                        "sucursalLey": null,
+                                        "otro": null,
+                                        "tipoDeGarantiaMobiliario": null,
+                                        "idUsuario": null,
+                                        "idOrganizacion": null,
+                                        "idSucursal": null,
+                                        "idEstado": null,
+                                        "idTipoEmbargo": null,
+                                        "motivoLevantamientoEmbargo": null,
+                                        "descripcionEstatus": null,
+                                        "estadoEmbargoNoDispAdmjud": null,
+                                        "ejecucionDescripcionObligacionGarantizada": null,
+                                        "ejecucionDescripcionIncumplimientoDeudor": null,
+                                        "ejecucionDescripcionPruebaIncumplimiento": null,
+                                        "ejecucionDescripcionMontoSaldo": null,
+                                        "ejecucionDescripcionMontofijado": null,
+                                        "ejecucionCostaProcesales": null,
+                                        "numeroSentenciaPrivilegio": null,
+                                        "tipoAvisosInscripcion": null,
+                                        "idSucursalNavigation": null,
+                                        "idUsuarioNavigation": null,
+                                        "idOrganizacionNavigation": null,
+                                        "acreedores": null,
+                                        "bienes": null,
+                                        "deudores": null
+                                    }
+                                }
+                            }
+                            """)));
+
+        // Registro con token inválido
+        wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
+                .withHeader("sessionid", equalTo("invalid-token"))
+                .atPriority(1)
                 .willReturn(aResponse()
                         .withStatus(401)
                         .withHeader("Content-Type", "application/json")
@@ -260,135 +136,62 @@ public class RestMock implements QuarkusTestResourceLifecycleManager {
                             {
                                 "header": {
                                     "responseCode": 401,
-                                    "responseMessage": "Credenciales inválidas o Token Expirado"
+                                    "responseMessage": "Token inválido"
                                 },
                                 "body": {
-                                    "security": {
-                                        "token": {
-                                            "number": "",
-                                            "expiration": "",
-                                            "contractValidation": false,
-                                            "succeed": false,
-                                            "message": "Authorization header required"
-                                        }
-                                    }
+                                    "data": null
                                 }
                             }
                             """)));
-    }
 
-    private void stubSuccessfulChangeStatus() {
-        // Cambio de estado exitoso para ID=37544, Status=2
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/cambia-estado-operacion"))
-                .withRequestBody(containing("\"id\":37544"))
-                .withRequestBody(containing("\"status\":2"))
+        // Registro con error del servidor
+        wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
+                .withHeader("sessionid", equalTo("server-error"))
+                .atPriority(1)
                 .willReturn(aResponse()
-                        .withStatus(200)
+                        .withStatus(500)
                         .withHeader("Content-Type", "application/json")
                         .withBody("""
                             {
-                                "Header": {
-                                    "ResponseCode": 200,
-                                    "ResponseMessage": "Exitoso"
+                                "header": {
+                                    "responseCode": 500,
+                                    "responseMessage": "Error interno del servidor"
                                 },
-                                "Body": {
-                                    "Operation": {
-                                        "id": 37544,
-                                        "status": 2,
-                                        "statusDescription": "Status Description",
-                                        "nonAvailableJudicialSeizureState": null,
-                                        "seizureTypeId": null,
-                                        "fixedAmountExecutionDescription": null,
-                                        "balanceAmountExecutionDescription": null,
-                                        "proceduralCostsExecution": null,
-                                        "guaranteedObligationExecutionDescription": null,
-                                        "debtorNonComplianceExecutionDescription": null,
-                                        "conciliationType": null,
-                                        "seizureReleaseDate": null,
-                                        "seizureReleaseReason": null
-                                    },
-                                    "Succeeded": true,
-                                    "Message": "Operación completada exitosamente",
-                                    "Errors": null,
-                                    "Security": {
-                                        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test.token"
-                                    }
+                                "body": {
+                                    "data": null
                                 }
                             }
                             """)));
-    }
 
-    private void stubFailedChangeStatus() {
-        // Cambio de estado fallido para ID=-1
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/cambia-estado-operacion"))
-                .withRequestBody(containing("\"id\":-1"))
+        // Registro con datos inválidos
+        wireMockServer.stubFor(post(urlEqualTo("/api/v1/master-registro-inscripcion"))
+                .withRequestBody(containing("\"invalidField\""))
+                .atPriority(1)
                 .willReturn(aResponse()
                         .withStatus(400)
                         .withHeader("Content-Type", "application/json")
                         .withBody("""
                             {
-                              "Header": {
-                                "ResponseCode": 400,
-                                "ResponseMessage": "ID de operación inválido"
-                              },
-                              "Body": {
-                                "Operation": null,
-                                "Succeeded": false,
-                                "Message": "ID debe ser mayor a 0",
-                                "Errors": ["Validation error"],
-                                "Security": null
-                              }
-                            }
-                            """)));
-    }
-
-    private void stubCatchAllStubs() {
-        // Catch-all para login (prioridad baja)
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/login-micm"))
-                .atPriority(10)
-                .willReturn(aResponse()
-                        .withStatus(400)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                              "header": {
-                                "responseCode": 400,
-                                "responseMessage": "sessionId es requerido"
-                              },
-                              "body": {
-                                "security": {
-                                  "token": {
-                                    "number": "",
-                                    "expiration": "",
-                                    "contractValidation": false,
-                                    "succeed": false,
-                                    "message": "sessionId header is required"
-                                  }
+                                "header": {
+                                    "responseCode": 400,
+                                    "responseMessage": "Datos de entrada inválidos"
+                                },
+                                "body": {
+                                    "data": null
                                 }
-                              }
                             }
                             """)));
 
-        // Catch-all para cambio estado (prioridad baja)
-        wireMockServer.stubFor(post(urlEqualTo("/api/v1/cambia-estado-operacion"))
-                .atPriority(10)
-                .willReturn(aResponse()
-                        .withStatus(400)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody("""
-                            {
-                              "Header": {
-                                "ResponseCode": 400,
-                                "ResponseMessage": "Request inválido"
-                              },
-                              "Body": {
-                                "Operation": null,
-                                "Succeeded": false,
-                                "Message": "Request inválido",
-                                "Errors": ["Bad request"],
-                                "Security": null
-                              }
-                            }
-                            """)));
+        return Map.of(
+            "micm.login.url", "http://localhost:8089/api/v1/login-micm",
+            "micm.registration.url", "http://localhost:8089/api/v1/master-registro-inscripcion"
+        );
+    }
+
+    @Override
+    public void stop() {
+        if (wireMockServer != null) {
+            wireMockServer.stop();
+        }
     }
 }

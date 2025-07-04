@@ -3,9 +3,6 @@ package com.banreservas.routes;
 import com.banreservas.processors.GenerateRegistrationMicmRequestProcessor;
 import com.banreservas.processors.ErrorResponseProcessor;
 import com.banreservas.util.Constants;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.apache.camel.Exchange;
@@ -52,7 +49,7 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 .log(LoggingLevel.ERROR, logger, "Timeout conectando al servicio registro MICM")
                 .setProperty(Constants.MESSAGE_PROPERTIE, constant(
                         "Timeout al conectar con servicio de Registro Inscripción MICM"))
-                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(500))
+                .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(502))
                 .process(errorResponseProcessor)
                 .marshal().json(JsonLibrary.Jackson)
                 .end();
@@ -101,35 +98,65 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     })
                 
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(400))
-    .log(LoggingLevel.WARN, logger, "Request inválido para servicio registro - HTTP 400")
-    .process(exchange -> {
-        String errorMessage = "Validacion de request ha fallado";
-        
-        try {
-            String responseBody = exchange.getIn().getBody(String.class);
-            if (responseBody != null && responseBody.contains("responseMessage")) {
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonNode = mapper.readTree(responseBody);
-                String extractedMessage = jsonNode.path("header").path("responseMessage").asText();
-                if (!extractedMessage.isEmpty()) {
-                    errorMessage = extractedMessage;
-                }
-            }
-        } catch (Exception e) {
-            logger.warn("Error parseando mensaje de error: {}", e.getMessage());
-        }
-        
-        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
-        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
-    })
-    .process(errorResponseProcessor)
-    .marshal().json(JsonLibrary.Jackson)
-    .stop()
+                    .log(LoggingLevel.WARN, logger, "Request inválido para servicio registro - HTTP 400")
+                    .process(exchange -> {
+                        String responseBody = exchange.getIn().getBody(String.class);
+                        String errorMessage = "Datos de entrada inválidos";
+                        
+                        try {
+                            if (responseBody != null && !responseBody.trim().isEmpty()) {
+                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(responseBody);
+                                
+                                String headerMessage = jsonNode.path("header").path("responseMessage").asText();
+                                String bodyMessage = jsonNode.path("body").path("message").asText();
+                                String directMessage = jsonNode.path("message").asText();
+                                String responseMessage = jsonNode.path("responseMessage").asText();
+                                
+                                if (!headerMessage.isEmpty()) {
+                                    errorMessage = headerMessage;
+                                } else if (!bodyMessage.isEmpty()) {
+                                    errorMessage = bodyMessage;
+                                } else if (!directMessage.isEmpty()) {
+                                    errorMessage = directMessage;
+                                } else if (!responseMessage.isEmpty()) {
+                                    errorMessage = responseMessage;
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error("Error parseando mensaje de error del servicio: {}", e.getMessage(), e);
+                        }
+                        
+                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
+                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 400);
+                    })
+                    .process(errorResponseProcessor)
+                    .marshal().json(JsonLibrary.Jackson)
+                    .stop()
                 
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(401))
                     .log(LoggingLevel.WARN, logger, "Token inválido para servicio registro - HTTP 401")
-                    .setProperty(Constants.MESSAGE_PROPERTIE, constant("Token inválido o expirado"))
-                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(401))
+                    .process(exchange -> {
+                        String responseBody = exchange.getIn().getBody(String.class);
+                        String errorMessage = "Token inválido o expirado";
+                        
+                        try {
+                            if (responseBody != null && !responseBody.trim().isEmpty()) {
+                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(responseBody);
+                                
+                                String headerMessage = jsonNode.path("header").path("responseMessage").asText();
+                                if (!headerMessage.isEmpty()) {
+                                    errorMessage = headerMessage;
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error("Error parseando mensaje de error 401: {}", e.getMessage());
+                        }
+                        
+                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
+                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 401);
+                    })
                     .process(errorResponseProcessor)
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
@@ -144,8 +171,27 @@ public class RegistrationMicmRoute extends RouteBuilder {
                 
                 .when(header(Exchange.HTTP_RESPONSE_CODE).isEqualTo(500))
                     .log(LoggingLevel.ERROR, logger, "Error interno en servicio registro - HTTP 500")
-                    .setProperty(Constants.MESSAGE_PROPERTIE, constant("Error interno en servicio de registro inscripción"))
-                    .setHeader(Exchange.HTTP_RESPONSE_CODE, constant(502))
+                    .process(exchange -> {
+                        String responseBody = exchange.getIn().getBody(String.class);
+                        String errorMessage = "Error interno en servicio de registro inscripción";
+                        
+                        try {
+                            if (responseBody != null && !responseBody.trim().isEmpty()) {
+                                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+                                com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(responseBody);
+                                
+                                String headerMessage = jsonNode.path("header").path("responseMessage").asText();
+                                if (!headerMessage.isEmpty()) {
+                                    errorMessage = headerMessage;
+                                }
+                            }
+                        } catch (Exception e) {
+                            logger.error("Error parseando mensaje de error 500: {}", e.getMessage());
+                        }
+                        
+                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
+                        exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 502);
+                    })
                     .process(errorResponseProcessor)
                     .marshal().json(JsonLibrary.Jackson)
                     .stop()
@@ -154,7 +200,8 @@ public class RegistrationMicmRoute extends RouteBuilder {
                     .log(LoggingLevel.ERROR, logger, "Error inesperado en servicio registro - HTTP ${header.CamelHttpResponseCode}")
                     .process(exchange -> {
                         Integer httpCode = exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
-                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, "Error inesperado en registro inscripción: HTTP " + httpCode);
+                        String errorMessage = "Error inesperado en registro inscripción: HTTP " + httpCode;
+                        exchange.setProperty(Constants.MESSAGE_PROPERTIE, errorMessage);
                         exchange.getIn().setHeader(Exchange.HTTP_RESPONSE_CODE, 502);
                     })
                     .process(errorResponseProcessor)
